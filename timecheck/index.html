@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="HOW_Service">
+<title>HOW_Service 타임체크</title><style>
+/* 카드뉴스 공용 글꼴: 본문 SCDream, 제목 Paperlogy */
+@font-face{font-family:'SCDream';src:url(fonts/SCDream-300.woff2) format('woff2');font-weight:300;font-display:swap}
+@font-face{font-family:'SCDream';src:url(fonts/SCDream-600.woff2) format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:'SCDream';src:url(fonts/SCDream-700.woff2) format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:'Paperlogy';src:url(fonts/Paperlogy-800.woff2) format('woff2');font-weight:800;font-display:swap}
+:root{
+  color-scheme:dark;
+  --black:#0A0A0A;
+  --ink:#EFEFEA;
+  --ink-2:#93938B;
+  --canvas:#0A0A0A;
+  --surface:#151513;
+  --surface-2:#1D1D1A;
+  --line:#2B2B27;
+  --line-2:#201F1C;
+  --gold:#D9AE4E;
+  --gold-soft:rgba(217,174,78,.14);
+  --bar-h:54px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;color-scheme:dark}
+body{
+  margin:0;background:var(--canvas);color:var(--ink);
+  font-family:'SCDream',-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-weight:300;font-size:15px;line-height:1.62;letter-spacing:-.005em;
+  padding-bottom:calc(96px + env(safe-area-inset-bottom));
+}
+
+/* ── 앱 바 ── */
+.appbar{
+  position:sticky;top:0;z-index:40;background:var(--black);
+  height:calc(var(--bar-h) + env(safe-area-inset-top));
+  padding-top:env(safe-area-inset-top);
+  display:flex;align-items:center;
+}
+.appbar .inner{
+  width:100%;max-width:680px;margin:0 auto;padding:0 18px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.mark{color:#fff;font-weight:600;font-size:20px;line-height:1;letter-spacing:.02em}
+.appbar em{font-style:normal;color:#8E8E88;font-size:12.5px}
+.bar-right{display:flex;align-items:center;gap:10px}
+#btn-install{background:#fff;color:var(--black);font-weight:600;font-size:12px;padding:6px 11px;border-radius:7px}
+
+.wrap{max-width:680px;margin:0 auto;padding:0 14px}
+
+/* ── 카드 ── */
+.card{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;margin-top:12px;overflow:hidden;
+}
+.card > .body{padding:16px}
+.head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line-2)}
+.step-no{
+  flex:none;width:21px;height:21px;border-radius:50%;
+  background:var(--gold);color:var(--black);font-weight:700;
+  font-size:11.5px;line-height:21px;text-align:center;
+}
+.head h2{margin:0;font-size:15.5px;font-weight:600;letter-spacing:-.01em}
+.mark,.head h2,.sheet-head h2{font-family:'Paperlogy','SCDream',-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-weight:800}
+.head .sub{margin-left:auto;font-size:12px;color:var(--ink-2)}
+
+label{display:block;font-size:12px;color:var(--ink-2);margin-bottom:5px}
+input[type=text],input[type=date],textarea,select{
+  width:100%;font:inherit;font-weight:300;color:var(--ink);
+  background:var(--surface-2);border:1px solid var(--line);
+  border-radius:9px;padding:10px 11px;
+}
+select{
+  appearance:none;-webkit-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,#9A9A92 50%),linear-gradient(135deg,#9A9A92 50%,transparent 50%);
+  background-position:calc(100% - 17px) 19px,calc(100% - 12px) 19px;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+  padding-right:34px;
+}
+input::placeholder,textarea::placeholder{color:#67675F}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:transparent;background-color:var(--surface-2)}
+textarea{resize:vertical;min-height:104px;font-size:14px;line-height:1.55}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fields .full{grid-column:1 / -1}
+.pick input{margin-top:7px}
+@media (max-width:460px){.fields{grid-template-columns:1fr}}
+
+button{font:inherit;cursor:pointer;border-radius:9px;border:1px solid transparent}
+.btn{background:var(--ink);color:var(--black);font-weight:600;padding:10px 16px}
+.btn:active{transform:translateY(1px)}
+.btn-line{background:var(--surface-2);color:var(--ink);border-color:var(--line);font-weight:600;padding:10px 16px}
+.btn-line:hover{background:var(--line-2)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.note{font-size:12.3px;color:var(--ink-2);margin:11px 0 0;line-height:1.55}
+.note code{background:var(--surface-2);border-radius:4px;padding:1px 5px;font-size:11.5px}
+
+/* ── 탭 / 내장 스톱워치 ── */
+.tabs{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-bottom:12px}
+.tab{flex:1;border:0;border-radius:0;background:var(--surface-2);color:var(--ink-2);padding:9px 0;font-size:13.5px}
+.tab + .tab{border-left:1px solid var(--line)}
+.tab.on{background:var(--ink);color:var(--black);font-weight:600}
+.check{display:flex;align-items:center;gap:7px;margin:10px 0 0;font-size:12.5px;color:var(--ink-2)}
+.check input{width:auto;margin:0;accent-color:var(--gold)}
+
+.watch{text-align:center;padding:6px 0 2px}
+.dial-wrap{width:148px;height:148px;margin:2px auto 12px}
+.dial{width:100%;height:100%;display:block;overflow:visible}
+.dial-face{fill:var(--surface-2);stroke:var(--line);stroke-width:1.5;transition:stroke .25s}
+.dial-wrap.running .dial-face{stroke:rgba(217,174,78,.55)}
+.dial-tick{stroke:var(--line);stroke-width:1.5}
+.dial-tick.major{stroke:var(--ink-2);stroke-width:2.5}
+.dial-hand{stroke:var(--ink-2);stroke-width:3;stroke-linecap:round;transition:stroke .25s}
+.dial-wrap.running .dial-hand{stroke:var(--gold)}
+.dial-pivot{fill:var(--ink-2);transition:fill .25s}
+.dial-wrap.running .dial-pivot{fill:var(--gold)}
+.wlabel{font-size:11.5px;color:var(--ink-2);letter-spacing:.02em}
+.wtime{
+  font-weight:600;font-size:44px;line-height:1.1;letter-spacing:.01em;
+  padding:2px 0 4px;
+}
+.wtime small{font-size:22px;color:var(--ink-2);font-weight:300}
+.wcur{font-size:13px;color:var(--gold);font-weight:600;padding-bottom:14px}
+.wbtns{display:flex;gap:8px}
+.wbtns button{flex:1;padding:12px 0}
+.wbtns button[disabled]{opacity:.35}
+#w-hint{text-align:left}
+
+/* ── 구간 목록 ── */
+.lapbar{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.3px;color:var(--ink-2);margin-bottom:10px}
+.lapwrap{margin-top:14px;padding-top:14px;border-top:1px solid var(--line-2)}
+.laplist{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.laprow{display:flex;align-items:center;gap:9px;padding:9px 10px;background:var(--surface);border-top:1px solid var(--line-2)}
+.laprow:first-child{border-top:0}
+.laprow .idx{
+  flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface-2);
+  color:var(--ink-2);font-size:11.5px;line-height:22px;text-align:center;
+}
+.laprow .dur{flex:none;min-width:52px;font-weight:600;font-size:14.5px}
+.laprow .acc{flex:1;font-size:12.3px;color:var(--gold)}
+.laprow .x{
+  flex:none;width:27px;height:27px;padding:0;border:1px solid var(--line);
+  background:var(--surface-2);color:var(--ink-2);border-radius:7px;font-size:13px;line-height:25px;
+}
+.laprow .x:active{background:var(--ink);color:var(--black);border-color:var(--ink)}
+.laprow{position:relative;transition:transform .15s ease}
+.laprow .grip{
+  flex:none;width:18px;height:28px;margin:-4px -4px -4px -4px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  color:#67675F;cursor:grab;touch-action:none;
+}
+.laprow .grip svg{width:10px;height:16px}
+.laprow.dragging{transition:none;z-index:2;background:var(--surface-2);box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.laprow.dragging .grip{cursor:grabbing;color:var(--gold)}
+.laplist.sorting{overflow:visible}
+@media (prefers-reduced-motion:reduce){.laprow{transition:none}}
+.laprow.off{background:var(--surface-2)}
+.laprow.off .dur{color:#57574F;text-decoration:line-through}
+.laprow.off .acc{color:#4E4E47}
+
+/* ── 곡 편집 ── */
+.song{padding:15px 0 6px;border-top:1px dashed var(--line)}
+.song:first-child{border-top:0;padding-top:2px}
+.song-head{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.song-no{
+  flex:none;width:23px;height:23px;border-radius:7px;background:var(--gold);
+  color:var(--black);font-weight:700;font-size:12px;line-height:23px;text-align:center;
+}
+.song-head .gap{flex:1}
+.mini{background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2);padding:4px 9px;font-size:12px;border-radius:7px}
+.mini:hover{background:var(--line-2);color:var(--ink)}
+.part{display:flex;gap:7px;align-items:center;margin-bottom:7px}
+.part .plus{width:12px;flex:none;color:#67675F;text-align:center;font-size:14px}
+.part .name{flex:1;min-width:0}
+.part .time{width:82px;flex:none;text-align:center}
+.sum{font-size:12.5px;color:var(--gold);font-weight:600;text-align:right;margin:1px 2px 8px}
+.alert{background:var(--gold-soft);border:1px solid rgba(217,174,78,.35);color:#E8C468;border-radius:9px;padding:10px 12px;font-size:12.8px;margin-top:12px}
+.empty{font-size:13px;color:var(--ink-2);padding:6px 0}
+
+/* ── 미리보기 ── */
+.preview-area{background:#EAEAE6;padding:16px 14px 18px}
+.bubble{
+  background:#fff;border-radius:4px 14px 14px 14px;padding:15px 16px;
+  font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word;
+  border:1px solid #DEDED8;
+}
+.stamp{display:block;text-align:right;font-size:11.5px;color:#8A8A83;margin-top:7px}
+
+/* ── 하단 바 ── */
+.dock{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  background:var(--black);color:#fff;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+}
+.dock .inner{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.dock .total{flex:1;min-width:0;line-height:1.25}
+.dock .total b{display:block;font-size:19px;font-weight:600;letter-spacing:.01em}
+.dock .total span{display:block;font-size:11.5px;color:#8E8E88;font-weight:300}
+.dock button{padding:11px 15px;font-size:14px;font-weight:600}
+.dock .save{background:#fff;color:var(--black)}
+.dock .copy{background:transparent;color:#fff;border-color:#3A3A38}
+.dock .copy:hover{background:#1C1C1A}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));
+  transform:translateX(-50%) translateY(6px);
+  background:#fff;color:var(--black);border:1px solid var(--line);
+  padding:9px 16px;border-radius:999px;font-size:13px;
+  box-shadow:0 6px 20px rgba(0,0,0,.13);
+  opacity:0;pointer-events:none;transition:opacity .16s,transform .16s;z-index:60;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+/* ── 아이콘 버튼 / 기록 시트 ── */
+.icon-btn{
+  flex:none;width:34px;height:34px;border-radius:9px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;color:#fff;border:1px solid #2A2A28;
+  font-size:15px;font-weight:600;line-height:1;
+}
+.icon-btn:active{background:#1C1C1A}
+.icon-btn svg{width:17px;height:17px}
+
+.sheet-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);
+  opacity:0;pointer-events:none;transition:opacity .18s;z-index:70;
+}
+.sheet-backdrop.show{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:71;
+  max-width:680px;margin:0 auto;
+  background:var(--surface);border:1px solid var(--line);border-bottom:0;
+  border-radius:18px 18px 0 0;
+  max-height:82vh;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .22s ease;
+  box-shadow:0 -12px 34px rgba(0,0,0,.5);
+}
+.sheet.show{transform:translateY(0)}
+.sheet-head{
+  display:flex;align-items:center;gap:10px;padding:16px 16px 12px;
+  border-bottom:1px solid var(--line-2);flex:none;
+}
+.sheet-head h2{margin:0;font-size:16px;font-weight:600;flex:1;color:var(--ink)}
+.sheet-body{overflow-y:auto;padding:14px 16px calc(20px + env(safe-area-inset-bottom))}
+.hist-save{width:100%;padding:12px 0;margin-bottom:14px}
+.hist-empty{font-size:13px;color:var(--ink-2);text-align:center;padding:34px 6px;line-height:1.6}
+.hist-item{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 4px;border-top:1px solid var(--line-2);cursor:pointer;
+}
+.hist-item:first-child{border-top:0}
+.hist-item .info{flex:1;min-width:0}
+.hist-item .d1{font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-item .d2{font-size:12px;color:var(--ink-2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-item .cur{flex:none;font-size:11px;color:var(--gold);background:var(--gold-soft);border-radius:999px;padding:2px 8px}
+.hist-item .x{
+  flex:none;width:27px;height:27px;padding:0;border:1px solid var(--line);
+  background:var(--surface-2);color:var(--ink-2);border-radius:7px;font-size:13px;line-height:25px;
+}
+
+/* ── 확인창 ── */
+.ask-box{
+  position:fixed;left:50%;top:50%;z-index:81;width:calc(100% - 48px);max-width:340px;
+  transform:translate(-50%,-50%);background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:20px 18px 16px;box-shadow:0 12px 34px rgba(0,0,0,.5);
+}
+.ask-box p{margin:0 0 16px;font-size:14.5px;line-height:1.55;color:var(--ink)}
+.ask-box .wbtns button{padding:11px 0}
+#ask-backdrop{z-index:80}
+</style>
+</head>
+<body>
+
+
+<div class="appbar">
+  <div class="inner">
+    <div class="mark">HOW_Service</div>
+    <div class="bar-right">
+      <button id="btn-history" class="icon-btn" type="button" aria-label="예배 기록 보기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l3 2"></path><path d="M9 2h6"></path></svg>
+      </button>
+      <button id="btn-install" hidden>앱 설치</button><em>타임체크</em>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="card">
+    <div class="head"><div class="step-no">1</div><h2>예배 정보</h2></div>
+    <div class="body">
+      <div class="fields">
+        <div><label for="f-date">날짜</label><input type="date" id="f-date"></div>
+        <div class="pick">
+          <label for="s-name">보내는 사람</label>
+          <select id="s-name">
+            <option>강건</option><option>이승범</option><option>전우린</option>
+            <option>하다혜</option><option>서하민</option>
+            <option selected>박태영</option><option>김동영</option>
+            <option value="__custom">직접 입력</option>
+          </select>
+          <input type="text" id="f-name" placeholder="이름 입력" hidden>
+        </div>
+        <div class="pick full">
+          <label for="s-meeting">모임명</label>
+          <select id="s-meeting">
+            <option selected>뉴송</option><option>5부</option>
+            <option value="__custom">직접 입력</option>
+          </select>
+          <input type="text" id="f-meeting" placeholder="모임명 입력" hidden>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><div class="step-no">2</div><h2>콘티</h2><div class="sub">번호 붙은 줄만 읽음</div></div>
+    <div class="body">
+      <textarea id="f-konti" placeholder="콘티를 통째로 붙여넣으세요."></textarea>
+      <div class="actions">
+        <button class="btn" id="btn-konti">곡 불러오기</button>
+        <button class="btn-line" id="btn-clear">전체 비우기</button>
+      </div>
+      <p class="note">링크와 송폼, <code>*</code> 메모는 걸러냅니다. 곡명 뒤 키(<code>E-F</code>)는 지우고, <code>+</code> <code>→</code>는 연결곡으로 나눕니다.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><div class="step-no">3</div><h2>시간</h2></div>
+    <div class="body">
+      <div class="tabs">
+        <button type="button" class="tab on" data-tab="paste">붙여넣기</button>
+        <button type="button" class="tab" data-tab="watch">직접 재기</button>
+      </div>
+
+      <div id="tab-paste">
+        <textarea id="f-times" placeholder="스톱워치 기록을 붙여넣거나&#10;0616 / 0719 / 0500 + 0320 + 0205"></textarea>
+        <label class="check"><input type="checkbox" id="f-cumul"><span>붙여넣은 값이 누적(전체) 시간입니다</span></label>
+        <div class="actions"><button class="btn" id="btn-times">시간 읽기</button></div>
+      </div>
+
+      <div id="tab-watch" hidden>
+        <div class="watch">
+          <div class="dial-wrap" id="dial-wrap">
+            <svg class="dial" viewBox="0 0 168 168" aria-hidden="true">
+              <circle class="dial-face" cx="84" cy="84" r="78"></circle>
+              <g id="dial-ticks"></g>
+              <line id="dial-hand" class="dial-hand" x1="84" y1="84" x2="84" y2="24"></line>
+              <circle class="dial-pivot" cx="84" cy="84" r="4"></circle>
+            </svg>
+          </div>
+          <div class="wlabel">지금까지 누적</div>
+          <div class="wtime" id="w-time">0:00<small>.0</small></div>
+          <div class="wcur" id="w-cur">이번 곡 0:00</div>
+          <div class="wbtns">
+            <button class="btn" id="w-main">시작</button>
+            <button class="btn-line" id="w-lap" disabled>곡 기록</button>
+            <button class="btn-line" id="w-reset">초기화</button>
+          </div>
+          <p class="note" id="w-hint">곡이 끝나면 곡 기록을 누르세요. 구간이 추가되고 타이머가 멈춥니다. 다음 곡이 시작되면 다음 곡 시작을 누르세요. 일시정지는 기록 없이 잠깐 멈출 때 씁니다.</p>
+        </div>
+      </div>
+
+      <div class="lapwrap" id="lap-box" hidden>
+        <div class="lapbar">
+          <span id="lapsum">합계 0분 00초</span>
+          <button type="button" class="mini" id="btn-reverse">순서 뒤집기</button>
+        </div>
+        <div class="laplist" id="laps"></div>
+        <p class="note">구간을 누르면 켜고 끌 수 있고, ✕는 아예 지웁니다. 왼쪽 점을 누른 채 끌면 순서가 바뀝니다. 꺼진 구간은 누적 시간에서 빠집니다.</p>
+        <div class="actions"><button class="btn" id="btn-apply">켜진 구간 적용</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><div class="step-no">4</div><h2>곡과 시간</h2><div class="sub">여기 내용이 그대로 나갑니다</div></div>
+    <div class="body">
+      <div id="editor"></div>
+      <div id="warn"></div>
+      <div class="actions"><button class="btn-line" id="btn-addsong">곡 추가</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><div class="step-no">5</div><h2>특이사항</h2><div class="sub">한 줄에 하나</div></div>
+    <div class="body">
+      <textarea id="f-notes" style="min-height:62px" placeholder="빛 되신 주 후 기도 제외한 시간입니다"></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h2>보낼 내용</h2><div class="sub" id="count">곡 0개</div></div>
+    <div class="preview-area">
+      <div class="bubble" id="preview">곡을 불러오면 여기에 나옵니다.</div>
+      <span class="stamp" id="stamp"></span>
+    </div>
+  </div>
+
+</div>
+
+<div class="dock">
+  <div class="inner">
+    <div class="total"><b id="total">0분 00초</b><span>총 시간</span></div>
+    <button class="copy" id="btn-copy">복사</button>
+    <button class="save" id="btn-share">공유하기</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="sheet-backdrop"></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="예배 기록">
+  <div class="sheet-head">
+    <h2>예배 기록</h2>
+    <button type="button" class="icon-btn" id="sheet-close" aria-label="닫기">✕</button>
+  </div>
+  <div class="sheet-body">
+    <button type="button" class="btn hist-save" id="hist-save">지금 내용을 기록에 저장</button>
+    <div id="hist-list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="sheet-backdrop" id="ask-backdrop"></div>
+<div class="ask-box" id="ask-box" role="alertdialog" hidden>
+  <p id="ask-msg"></p>
+  <div class="wbtns">
+    <button type="button" class="btn-line" id="ask-no">취소</button>
+    <button type="button" class="btn" id="ask-yes">확인</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var songs = [], laps = [], groupsFromText = null, currentRecordId = null;
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* ---------- 확인창 (아티팩트에서는 confirm()이 동작하지 않음) ---------- */
+  var askYes = null;
+  function ask(msg, yes){
+    askYes = yes;
+    $('ask-msg').textContent = msg;
+    $('ask-box').hidden = false;
+    $('ask-backdrop').classList.add('show');
+  }
+  function closeAsk(){ $('ask-box').hidden = true; $('ask-backdrop').classList.remove('show'); askYes = null; }
+  $('ask-no').addEventListener('click', closeAsk);
+  $('ask-backdrop').addEventListener('click', closeAsk);
+  $('ask-yes').addEventListener('click', function(){ var f = askYes; closeAsk(); if(f) f(); });
+
+  /* ---------- 선택 + 직접 입력 ---------- */
+  function bindPick(selId, inpId){
+    var sel = $(selId), inp = $(inpId);
+    function sync(){
+      var custom = sel.value === '__custom';
+      inp.hidden = !custom;
+      if(custom && document.activeElement === sel) inp.focus();
+      preview();
+    }
+    sel.addEventListener('change', sync);
+    inp.addEventListener('input', preview);
+    sync();
+  }
+  function pickValue(selId, inpId){
+    var sel = $(selId);
+    return sel.value === '__custom' ? $(inpId).value.trim() : sel.value;
+  }
+
+  /* ---------- 시간 유틸 ---------- */
+  function toSec(str){
+    if(str == null) return 0;
+    var s = String(str).trim(); if(!s) return 0;
+    var m;
+    m = s.match(/(\d+)\s*분\s*(\d+)?\s*초?/); if(m) return (+m[1])*60 + (+(m[2]||0));
+    m = s.match(/^(\d{1,2}):(\d{1,2}):(\d{1,2})/); if(m) return (+m[1])*3600 + (+m[2])*60 + (+m[3]);
+    m = s.match(/^(\d{1,3}):(\d{1,2})/); if(m) return (+m[1])*60 + (+m[2]);
+    m = s.match(/^(\d{3,4})$/); if(m){ var d=m[1]; return (+d.slice(0,d.length-2))*60 + (+d.slice(-2)); }
+    m = s.match(/^(\d{1,2})$/); if(m) return (+m[1])*60;
+    return 0;
+  }
+  function fmt(sec){
+    sec = Math.max(0, Math.round(sec));
+    var h = Math.floor(sec/3600), m = Math.floor(sec%3600/60), s = sec%60;
+    var ss = (s<10?'0':'') + s;
+    return h > 0 ? (h+'시간 '+m+'분 '+ss+'초') : (m+'분 '+ss+'초');
+  }
+  function fmtInput(sec){ var m=Math.floor(sec/60), s=sec%60; return m+':'+(s<10?'0':'')+s; }
+
+  /* ---------- 콘티 파싱 ---------- */
+  var KEY_TAIL = /[\s(（]*\b([A-G][b#♭♯]?)(\s*(?:or|-|~|\/|–)\s*[A-G][b#♭♯]?)*\s*[)）]?\s*$/;
+  function cleanTitle(t){
+    t = t.replace(/https?:\/\/\S+/g,'').replace(/\s+/g,' ').trim();
+    var before = t;
+    t = t.replace(KEY_TAIL,'').trim();
+    if(!t) t = before;
+    return t.replace(/[,\-–]\s*$/,'').trim();
+  }
+  function parseKonti(text){
+    var out = [], lines = text.split(/\r?\n/);
+    for(var i=0;i<lines.length;i++){
+      var line = lines[i];
+      if(/^\s*[*#]/.test(line)) continue;
+      if(/^\s*https?:/i.test(line)) continue;
+      var m = line.match(/^\s*(\d{1,2})\s*[.)]\s*(.+)$/);
+      if(!m) continue;
+      var raw = m[2];
+      if(/^https?:/i.test(raw.trim())) continue;
+      var chunks = raw.split(/\s*(?:\+|→|->|›)\s*/), parts = [];
+      for(var j=0;j<chunks.length;j++){
+        var nm = cleanTitle(chunks[j]);
+        if(nm) parts.push({name:nm, sec:0});
+      }
+      if(parts.length) out.push({parts:parts});
+    }
+    return out;
+  }
+
+  /* ---------- 시간 파싱 ---------- */
+  function parseTimes(text){
+    var lines = text.split(/\r?\n/), rows = [], seen = {}, i, m;
+
+    // 1) 삼성 스톱워치처럼 [번호 구간기록 전체시간] 세 칸인 경우
+    for(i=0;i<lines.length;i++){
+      m = lines[i].match(/^\s*(\d{1,2})\s+(\d{1,2}:\d{2}(?:[.,]\d+)?)\s+(\d{1,2}:\d{2}(?:[.,]\d+)?)/);
+      if(m){
+        var key = m[1]+'|'+m[2];
+        if(seen[key]) continue;
+        seen[key] = 1;
+        rows.push({no:+m[1], sec:toSec(m[2]), on:true});
+      }
+    }
+    if(rows.length >= 2){
+      rows.sort(function(a,b){ return a.no-b.no; });
+      groupsFromText = null;
+      return finish(rows.map(function(r){ return r.sec; }));
+    }
+
+    // 2) 줄마다 시간이 하나씩만 보이는 경우 (아이폰 라이브 텍스트 등)
+    var tok = [];
+    for(i=0;i<lines.length;i++){
+      var found = lines[i].match(/\d{1,3}:\d{2}(?:[.,]\d+)?/g);
+      if(found && found.length) tok.push(toSec(found[0]));
+    }
+    if(tok.length >= 2){
+      groupsFromText = null;
+      return finish(tok);
+    }
+
+    // 3) 0616 / 0719 + 0320 형식
+    var groups = [], flat = [], n = 0, segs = text.split('/');
+    for(var g=0; g<segs.length; g++){
+      var seg = segs[g].trim(); if(!seg) continue;
+      var parts = seg.split('+'), grp = [];
+      for(var p=0;p<parts.length;p++){
+        var v = toSec(parts[p]);
+        if(v > 0){ n++; grp.push(v); flat.push({no:n, sec:v, on:true}); }
+      }
+      if(grp.length) groups.push(grp);
+    }
+    groupsFromText = groups.length ? groups : null;
+    return flat;
+
+    function finish(vals){
+      if($('f-cumul').checked){
+        // 누적 시간이면 내림차순일 수 있으니 오름차순으로 맞춘 뒤 차이를 구한다
+        var asc = vals.slice();
+        if(asc.length > 1 && asc[0] > asc[asc.length-1]) asc.reverse();
+        var diff = [], prev = 0;
+        for(var i=0;i<asc.length;i++){ diff.push(Math.max(0, asc[i]-prev)); prev = asc[i]; }
+        vals = diff;
+      }
+      return vals.map(function(v, i){ return {no:i+1, sec:v, on:true}; });
+    }
+  }
+
+  function applyTimes(){
+    var on = laps.filter(function(l){ return l.on; }).map(function(l){ return l.sec; });
+    if(!songs.length){ toast('먼저 곡을 불러오세요'); return; }
+    if(!on.length){ toast('켜진 구간이 없습니다'); return; }
+    var useGroups = groupsFromText && groupsFromText.length === songs.length
+      && laps.every(function(l){ return l.on; });
+    if(useGroups){
+      for(var i=0;i<songs.length;i++){
+        var grp = groupsFromText[i], song = songs[i];
+        while(song.parts.length < grp.length) song.parts.push({name:'', sec:0});
+        for(var j=0;j<song.parts.length;j++) song.parts[j].sec = grp[j] || 0;
+      }
+    }else{
+      var k = 0;
+      for(var a=0;a<songs.length;a++){
+        for(var b=0;b<songs[a].parts.length;b++){
+          songs[a].parts[b].sec = (k < on.length) ? on[k] : 0;
+          k++;
+        }
+      }
+      if(k !== on.length) toast(k > on.length ? '구간이 모자랍니다' : '남는 구간이 있습니다');
+    }
+    render();
+  }
+
+  /* ---------- 편집 화면 ---------- */
+  function render(){
+    var box = $('editor');
+    box.innerHTML = '';
+    if(!songs.length) box.innerHTML = '<p class="empty">콘티를 불러오면 곡이 여기 나옵니다.</p>';
+    songs.forEach(function(song, si){
+      var el = document.createElement('div');
+      el.className = 'song';
+      var head = document.createElement('div');
+      head.className = 'song-head';
+      head.innerHTML = '<div class="song-no">'+(si+1)+'</div><div class="gap"></div>';
+      mkBtn(head, '연결곡', function(){ song.parts.push({name:'', sec:0}); render(); });
+      mkBtn(head, '위로',  function(){ if(si>0){ songs.splice(si-1,0,songs.splice(si,1)[0]); render(); } });
+      mkBtn(head, '삭제',  function(){ songs.splice(si,1); render(); });
+      el.appendChild(head);
+
+      song.parts.forEach(function(part, pi){
+        var row = document.createElement('div');
+        row.className = 'part';
+        var plus = document.createElement('div');
+        plus.className = 'plus';
+        plus.textContent = pi === 0 ? '' : '+';
+        row.appendChild(plus);
+
+        var nm = document.createElement('input');
+        nm.type='text'; nm.className='name'; nm.value=part.name; nm.placeholder='곡명';
+        nm.addEventListener('input', function(){ part.name = nm.value; preview(); });
+        row.appendChild(nm);
+
+        var tm = document.createElement('input');
+        tm.type='text'; tm.className='time'; tm.value=fmtInput(part.sec); tm.placeholder='5:26';
+        tm.setAttribute('inputmode','numeric');
+        tm.addEventListener('input', function(){ part.sec = toSec(tm.value); preview(); });
+        tm.addEventListener('blur',  function(){ tm.value = fmtInput(part.sec); render(); });
+        row.appendChild(tm);
+
+        if(song.parts.length > 1){
+          var del = document.createElement('button');
+          del.className='mini'; del.type='button'; del.textContent='−';
+          del.addEventListener('click', function(){ song.parts.splice(pi,1); render(); });
+          row.appendChild(del);
+        }
+        el.appendChild(row);
+      });
+
+      if(song.parts.length > 1){
+        var sum = document.createElement('div');
+        sum.className = 'sum';
+        sum.textContent = '= ' + fmt(songSec(song));
+        el.appendChild(sum);
+      }
+      box.appendChild(el);
+    });
+    preview();
+  }
+  function mkBtn(parent, label, fn){
+    var b = document.createElement('button');
+    b.className='mini'; b.type='button'; b.textContent=label;
+    b.addEventListener('click', fn);
+    parent.appendChild(b);
+  }
+  function songSec(song){ return song.parts.reduce(function(s,p){ return s+p.sec; }, 0); }
+
+  /* ---------- 출력 ---------- */
+  var WD = ['일','월','화','수','목','금','토'];
+  function headerLine(){
+    var v = $('f-date').value, dstr = '';
+    if(v){
+      var p = v.split('-');
+      dstr = p[1] + '/' + p[2] + '(' + WD[new Date(+p[0], +p[1]-1, +p[2]).getDay()] + ')';
+    }
+    return [dstr, pickValue('s-meeting','f-meeting')].filter(Boolean).join(' ');
+  }
+  function build(){
+    var name = pickValue('s-name','f-name') || '섬김팀원';
+    var L = ['안녕하세요 목사님!', '섬김팀 ' + name + ' 입니다.', '',
+             headerLine(), '경배와 찬양 타임체크입니다.', ''];
+    songs.forEach(function(song, i){
+      if(song.parts.length === 1){
+        L.push((i+1) + '. ' + (song.parts[0].name || ''));
+        L.push('(' + fmt(song.parts[0].sec) + ')');
+      }else{
+        song.parts.forEach(function(p, j){
+          L.push(j === 0 ? ((i+1) + '. ' + (p.name || '')) : ('+ ' + (p.name || '')));
+          L.push('(' + fmt(p.sec) + ')');
+        });
+        L.push('= ' + fmt(songSec(song)));
+      }
+      L.push('');
+    });
+    L.push('총 시간 ' + fmt(totalSec()) + ' 입니다!');
+    $('f-notes').value.split(/\r?\n/)
+      .map(function(s){ return s.trim().replace(/^\*+\s*/, ''); })
+      .filter(Boolean).forEach(function(n){ L.push('*' + n); });
+    return L.join('\n');
+  }
+  function totalSec(){ return songs.reduce(function(s,x){ return s + songSec(x); }, 0); }
+
+  function preview(){
+    var has = songs.length > 0, text = has ? build() : '';
+    $('preview').textContent = has ? text : '곡을 불러오면 여기에 나옵니다.';
+    $('total').textContent = fmt(totalSec());
+    var parts = songs.reduce(function(s,x){ return s + x.parts.length; }, 0);
+    $('count').textContent = '곡 ' + songs.length + '개 · 구간 ' + parts + '개';
+    $('stamp').textContent = has ? (text.length + '자') : '';
+    var empty = songs.some(function(s){
+      return s.parts.some(function(p){ return !p.sec || !p.name; });
+    });
+    $('warn').innerHTML = empty ? '<div class="alert">시간이나 곡명이 빈 칸이 있습니다.</div>' : '';
+    saveDraft();
+  }
+
+  function renderLaps(){
+    var box = $('laps');
+    box.innerHTML = '';
+    var acc = 0;
+    laps.forEach(function(l, i){
+      if(l.on) acc += l.sec;
+      var accNow = acc;
+
+      var row = document.createElement('div');
+      row.className = 'laprow' + (l.on ? '' : ' off');
+
+      var grip = document.createElement('div');
+      grip.className = 'grip';
+      grip.setAttribute('aria-label', '끌어서 순서 바꾸기');
+      grip.innerHTML = '<svg viewBox="0 0 10 16" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="3" r="1.5"/><circle cx="7.5" cy="3" r="1.5"/><circle cx="2.5" cy="8" r="1.5"/><circle cx="7.5" cy="8" r="1.5"/><circle cx="2.5" cy="13" r="1.5"/><circle cx="7.5" cy="13" r="1.5"/></svg>';
+      grip.addEventListener('click', function(e){ e.stopPropagation(); });
+      grip.addEventListener('pointerdown', function(e){ startDrag(e, row, i); });
+      row.appendChild(grip);
+
+      var idx = document.createElement('div');
+      idx.className = 'idx'; idx.textContent = (i+1);
+      row.appendChild(idx);
+
+      var dur = document.createElement('div');
+      dur.className = 'dur'; dur.textContent = fmtInput(l.sec);
+      row.appendChild(dur);
+
+      var ac = document.createElement('div');
+      ac.className = 'acc';
+      ac.textContent = l.on ? ('누적 ' + fmt(accNow)) : '제외됨';
+      row.appendChild(ac);
+
+      var x = document.createElement('button');
+      x.type = 'button'; x.className = 'x'; x.textContent = '✕';
+      x.addEventListener('click', function(e){
+        e.stopPropagation();
+        laps.splice(i, 1);
+        renumber();
+        renderLaps();
+      });
+      row.appendChild(x);
+
+      row.addEventListener('click', function(){
+        l.on = !l.on;
+        renderLaps();
+      });
+      box.appendChild(row);
+    });
+    $('lapsum').textContent = '켜진 구간 합계 ' + fmt(acc);
+    $('lap-box').hidden = laps.length === 0;
+    paintWatch();
+    saveDraft();
+  }
+  function renumber(){ laps.forEach(function(l, i){ l.no = i+1; }); }
+  function onLapSec(){
+    return laps.reduce(function(s, l){ return s + (l.on ? l.sec : 0); }, 0);
+  }
+  var paintWatch = function(){};
+
+  /* ---------- 구간 끌어서 순서 바꾸기 ---------- */
+  function startDrag(e, row, from){
+    if(e.button > 0) return;
+    e.preventDefault();
+    var list = $('laps'), rows = Array.prototype.slice.call(list.children);
+    var h = row.offsetHeight, startY = e.clientY, to = from;
+    var grip = e.currentTarget;
+    try{ grip.setPointerCapture(e.pointerId); }catch(err){}
+    list.classList.add('sorting');
+    row.classList.add('dragging');
+    function move(ev){
+      var dy = ev.clientY - startY;
+      dy = Math.max(-from * h, Math.min((rows.length - 1 - from) * h, dy));
+      row.style.transform = 'translateY(' + dy + 'px)';
+      to = Math.max(0, Math.min(rows.length - 1, from + Math.round(dy / h)));
+      rows.forEach(function(r, j){
+        if(r === row) return;
+        var shift = (j > from && j <= to) ? -h : (j < from && j >= to) ? h : 0;
+        r.style.transform = shift ? 'translateY(' + shift + 'px)' : '';
+      });
+    }
+    function end(){
+      grip.removeEventListener('pointermove', move);
+      grip.removeEventListener('pointerup', end);
+      grip.removeEventListener('pointercancel', end);
+      list.classList.remove('sorting');
+      if(to !== from){
+        laps.splice(to, 0, laps.splice(from, 1)[0]);
+        renumber();
+        groupsFromText = null;
+      }
+      renderLaps();
+    }
+    grip.addEventListener('pointermove', move);
+    grip.addEventListener('pointerup', end);
+    grip.addEventListener('pointercancel', end);
+  }
+
+  /* ---------- 저장 / 예배 기록 ---------- */
+  var DRAFT_KEY = 'how_service_draft_v1';
+  var HIST_KEY = 'how_service_history_v1';
+
+  function serialize(){
+    return {
+      recordId: currentRecordId,
+      date: $('f-date').value,
+      sName: $('s-name').value, fName: $('f-name').value,
+      sMeeting: $('s-meeting').value, fMeeting: $('f-meeting').value,
+      konti: $('f-konti').value,
+      times: $('f-times').value,
+      cumul: $('f-cumul').checked,
+      notes: $('f-notes').value,
+      songs: songs, laps: laps
+    };
+  }
+  function deserialize(d){
+    $('f-date').value = d.date || '';
+    if(d.sName){ $('s-name').value = d.sName; }
+    $('f-name').value = d.fName || '';
+    $('s-name').dispatchEvent(new Event('change'));
+    if(d.sMeeting){ $('s-meeting').value = d.sMeeting; }
+    $('f-meeting').value = d.fMeeting || '';
+    $('s-meeting').dispatchEvent(new Event('change'));
+    $('f-konti').value = d.konti || '';
+    $('f-times').value = d.times || '';
+    $('f-cumul').checked = !!d.cumul;
+    $('f-notes').value = d.notes || '';
+    songs = (d.songs || []).map(function(s){
+      return {parts:(s.parts || []).map(function(p){ return {name:p.name || '', sec:p.sec || 0}; })};
+    });
+    laps = (d.laps || []).map(function(l){ return {no:l.no || 0, sec:l.sec || 0, on:l.on !== false}; });
+    groupsFromText = null;
+    render();
+    renderLaps();
+  }
+
+  function loadDraft(){
+    try{ return JSON.parse(localStorage.getItem(DRAFT_KEY)); }catch(e){ return null; }
+  }
+  function saveDraft(){
+    try{ localStorage.setItem(DRAFT_KEY, JSON.stringify(serialize())); }catch(e){}
+  }
+
+  function loadHistoryList(){
+    try{ return JSON.parse(localStorage.getItem(HIST_KEY)) || []; }catch(e){ return []; }
+  }
+  function saveHistoryList(list){
+    try{ localStorage.setItem(HIST_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  function songName(rec){ return rec.sName === '__custom' ? rec.fName : rec.sName; }
+  function meetingName(rec){ return rec.sMeeting === '__custom' ? rec.fMeeting : rec.sMeeting; }
+  function recordTotal(rec){
+    return (rec.songs || []).reduce(function(s, song){
+      return s + (song.parts || []).reduce(function(a, p){ return a + (p.sec || 0); }, 0);
+    }, 0);
+  }
+  function fmtRecDate(v){
+    if(!v) return '날짜 없음';
+    var p = v.split('-');
+    if(p.length < 3) return v;
+    return p[1] + '/' + p[2] + '(' + WD[new Date(+p[0], +p[1]-1, +p[2]).getDay()] + ')';
+  }
+
+  function saveCurrentToHistory(){
+    if(!songs.length){ toast('저장할 곡이 없습니다'); return; }
+    var list = loadHistoryList(), data = serialize(), now = Date.now();
+    if(currentRecordId){
+      var idx = -1;
+      for(var i=0;i<list.length;i++){ if(list[i].id === currentRecordId){ idx = i; break; } }
+      if(idx > -1){
+        data.id = currentRecordId; data.savedAt = now;
+        list[idx] = data;
+        saveHistoryList(list);
+        renderHistoryList();
+        toast('기록을 업데이트했습니다');
+        return;
+      }
+    }
+    data.id = 'r' + now + Math.random().toString(36).slice(2,7);
+    data.savedAt = now;
+    list.unshift(data);
+    saveHistoryList(list);
+    currentRecordId = data.id;
+    renderHistoryList();
+    saveDraft();
+    toast('기록에 저장했습니다');
+  }
+  function deleteHistoryItem(id){
+    var list = loadHistoryList().filter(function(r){ return r.id !== id; });
+    saveHistoryList(list);
+    if(currentRecordId === id) currentRecordId = null;
+    renderHistoryList();
+  }
+  function loadHistoryItem(id){
+    var list = loadHistoryList(), rec = null;
+    for(var i=0;i<list.length;i++){ if(list[i].id === id){ rec = list[i]; break; } }
+    if(!rec) return;
+    function go(){
+      currentRecordId = id;
+      deserialize(rec);
+      closeSheet();
+      toast('불러왔습니다');
+    }
+    if(songs.length) ask('현재 작성 중인 내용을 불러온 기록으로 바꿀까요?', go); else go();
+  }
+  function renderHistoryList(){
+    var list = loadHistoryList(), box = $('hist-list');
+    box.innerHTML = '';
+    if(!list.length){
+      box.innerHTML = '<p class="hist-empty">아직 저장된 예배 기록이 없습니다.<br>위 버튼으로 지금 내용을 저장해 보세요.</p>';
+      return;
+    }
+    list.forEach(function(rec){
+      var row = document.createElement('div');
+      row.className = 'hist-item';
+
+      var info = document.createElement('div');
+      info.className = 'info';
+      var d1 = document.createElement('div'); d1.className = 'd1';
+      d1.textContent = fmtRecDate(rec.date) + (meetingName(rec) ? ' · ' + meetingName(rec) : '');
+      var d2 = document.createElement('div'); d2.className = 'd2';
+      d2.textContent = [songName(rec), '곡 ' + (rec.songs || []).length + '개', fmt(recordTotal(rec))]
+        .filter(Boolean).join(' · ');
+      info.appendChild(d1); info.appendChild(d2);
+      row.appendChild(info);
+
+      if(rec.id === currentRecordId){
+        var cur = document.createElement('span'); cur.className = 'cur'; cur.textContent = '현재';
+        row.appendChild(cur);
+      }
+
+      var del = document.createElement('button');
+      del.type = 'button'; del.className = 'x'; del.textContent = '✕';
+      del.addEventListener('click', function(e){
+        e.stopPropagation();
+        ask('이 기록을 삭제할까요?', function(){ deleteHistoryItem(rec.id); });
+      });
+      row.appendChild(del);
+
+      row.addEventListener('click', function(){ loadHistoryItem(rec.id); });
+      box.appendChild(row);
+    });
+  }
+  function openSheet(){
+    renderHistoryList();
+    $('sheet-backdrop').classList.add('show');
+    $('sheet').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSheet(){
+    $('sheet-backdrop').classList.remove('show');
+    $('sheet').classList.remove('show');
+    document.body.style.overflow = '';
+  }
+  $('btn-history').addEventListener('click', openSheet);
+  $('sheet-backdrop').addEventListener('click', closeSheet);
+  $('sheet-close').addEventListener('click', closeSheet);
+  $('hist-save').addEventListener('click', saveCurrentToHistory);
+
+  var tid;
+  function toast(msg){
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(tid);
+    tid = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+
+  /* ---------- 이벤트 ---------- */
+  $('btn-konti').addEventListener('click', function(){
+    var parsed = parseKonti($('f-konti').value);
+    if(!parsed.length){ toast('번호 붙은 곡을 못 찾았습니다'); return; }
+    var old = [];
+    songs.forEach(function(s){ s.parts.forEach(function(p){ old.push(p.sec); }); });
+    var k = 0;
+    parsed.forEach(function(s){ s.parts.forEach(function(p){ p.sec = old[k++] || 0; }); });
+    songs = parsed;
+    render();
+    toast(songs.length + '곡 불러왔습니다');
+  });
+  $('btn-times').addEventListener('click', function(){
+    laps = parseTimes($('f-times').value);
+    if(!laps.length){ toast('시간을 못 찾았습니다'); $('lap-box').hidden = true; return; }
+    renderLaps();
+    toast(laps.length + '개 구간을 읽었습니다');
+  });
+  $('btn-apply').addEventListener('click', applyTimes);
+  $('btn-addsong').addEventListener('click', function(){ songs.push({parts:[{name:'',sec:0}]}); render(); });
+  $('btn-clear').addEventListener('click', function(){
+    ask('입력한 내용을 모두 지울까요?', function(){
+      songs = []; laps = []; groupsFromText = null; currentRecordId = null;
+      $('f-konti').value=''; $('f-times').value=''; $('f-notes').value='';
+      $('lap-box').hidden = true;
+      render();
+    });
+  });
+  /* ---------- 탭 ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){
+    t.addEventListener('click', function(){
+      var which = t.getAttribute('data-tab');
+      Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(x){
+        x.classList.toggle('on', x === t);
+      });
+      $('tab-paste').hidden = which !== 'paste';
+      $('tab-watch').hidden = which !== 'watch';
+    });
+  });
+
+  /* ---------- 내장 스톱워치 ---------- */
+  (function(){
+    var running = false, startAt = 0, before = 0, lastMark = 0, raf = null;
+    var dialHand = $('dial-hand'), dialWrap = $('dial-wrap');
+
+    /* 재는 동안 화면이 꺼지지 않게 (지원하는 브라우저에서만) */
+    var wakeLock = null;
+    function acquireWakeLock(){
+      if(!('wakeLock' in navigator)) return;
+      navigator.wakeLock.request('screen').then(function(lock){ wakeLock = lock; }).catch(function(){});
+    }
+    function releaseWakeLock(){
+      if(wakeLock){ wakeLock.release().catch(function(){}); wakeLock = null; }
+    }
+    document.addEventListener('visibilitychange', function(){
+      if(running && document.visibilityState === 'visible') acquireWakeLock();
+    });
+
+    (function buildDialTicks(){
+      var g = $('dial-ticks'), cx = 84, cy = 84, rOuter = 76;
+      for(var i=0;i<60;i++){
+        var major = i % 5 === 0;
+        var rInner = major ? 60 : 69;
+        var a = (i * 6) * Math.PI / 180;
+        var x1 = cx + rOuter * Math.sin(a), y1 = cy - rOuter * Math.cos(a);
+        var x2 = cx + rInner * Math.sin(a), y2 = cy - rInner * Math.cos(a);
+        var el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        el.setAttribute('x1', x1.toFixed(2)); el.setAttribute('y1', y1.toFixed(2));
+        el.setAttribute('x2', x2.toFixed(2)); el.setAttribute('y2', y2.toFixed(2));
+        el.setAttribute('class', 'dial-tick' + (major ? ' major' : ''));
+        g.appendChild(el);
+      }
+    })();
+
+    function now(){ return before + (running ? (Date.now() - startAt) : 0); }
+    function clock(ms){
+      var t = Math.floor(ms/1000), m = Math.floor(t/60), s = t%60;
+      return m + ':' + (s<10?'0':'') + s;
+    }
+    function paint(){
+      var ms = now();
+      var lapMs = Math.max(0, ms - lastMark);
+      // 누적 = 켜진 구간 합계 + 지금 재고 있는 곡 (꺼지거나 지운 구간은 빠짐)
+      var shown = onLapSec() * 1000 + lapMs;
+      $('w-time').innerHTML = clock(shown) + '<small>.' + Math.floor((shown%1000)/100) + '</small>';
+      $('w-cur').textContent = '이번 곡 ' + clock(lapMs);
+      var angle = (lapMs % 60000) / 60000 * 360;
+      dialHand.setAttribute('transform', 'rotate(' + angle.toFixed(2) + ' 84 84)');
+      $('w-lap').disabled = !running && lapMs < 1000;
+      if(running){ cancelAnimationFrame(raf); raf = requestAnimationFrame(paint); }
+    }
+    paintWatch = function(){ if(!running) paint(); };
+    function pause(label){
+      before = now(); running = false;
+      cancelAnimationFrame(raf);
+      $('w-main').textContent = label;
+      dialWrap.classList.remove('running');
+      releaseWakeLock();
+      paint();
+    }
+    function pushLap(){
+      var ms = now();
+      laps.push({no:0, sec:Math.round((ms - lastMark)/1000), on:true});
+      lastMark = ms;
+      renumber();
+      groupsFromText = null;
+      renderLaps();
+    }
+    $('w-main').addEventListener('click', function(){
+      if(running){
+        pause('이어서 재기');
+      }else{
+        startAt = Date.now(); running = true;
+        $('w-main').textContent = '일시정지';
+        dialWrap.classList.add('running');
+        acquireWakeLock();
+        paint();
+      }
+    });
+    $('w-lap').addEventListener('click', function(){
+      if(running) pause('다음 곡 시작');
+      if(now() - lastMark < 1000) return;
+      pushLap();
+      $('w-main').textContent = '다음 곡 시작';
+      paint();
+      toast(laps.length + '번째 곡을 기록했습니다');
+    });
+    $('w-reset').addEventListener('click', function(){
+      function go(){
+        running = false; cancelAnimationFrame(raf);
+        before = 0; lastMark = 0; laps = [];
+        $('w-main').textContent = '시작';
+        $('w-lap').disabled = true;
+        $('lap-box').hidden = true;
+        dialWrap.classList.remove('running');
+        releaseWakeLock();
+        paint();
+      }
+      if(laps.length) ask('기록한 구간을 모두 지울까요?', go); else go();
+    });
+    paint();
+  })();
+
+  $('btn-reverse').addEventListener('click', function(){
+    laps.reverse();
+    renumber();
+    groupsFromText = null;
+    renderLaps();
+  });
+
+  $('f-date').addEventListener('input', preview);
+  $('f-notes').addEventListener('input', preview);
+
+  $('btn-copy').addEventListener('click', function(){
+    if(!songs.length){ toast('곡을 먼저 불러오세요'); return; }
+    var text = build();
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(
+        function(){ toast('복사했습니다'); },
+        function(){ fallbackCopy(text); });
+    } else fallbackCopy(text);
+  });
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); toast('복사했습니다'); }
+    catch(e){ toast('본문을 길게 눌러 복사해 주세요'); }
+    document.body.removeChild(ta);
+  }
+  $('btn-share').addEventListener('click', function(){
+    if(!songs.length){ toast('곡을 먼저 불러오세요'); return; }
+    var text = build();
+    if(navigator.share){
+      navigator.share({ text: text }).catch(function(err){
+        if(err && err.name === 'AbortError') return;   // 사용자가 닫은 경우
+        fallbackCopy(text);
+        toast('공유창이 열리지 않아 복사했습니다');
+      });
+    }else{
+      fallbackCopy(text);
+      toast('이 브라우저는 공유를 지원하지 않아 복사했습니다');
+    }
+  });
+
+  var __savedDraft = loadDraft(); // bindPick() below triggers a preview()→saveDraft() as a side effect, so read the old draft first or it gets clobbered by an empty one.
+
+  bindPick('s-name','f-name');
+  bindPick('s-meeting','f-meeting');
+
+  (function(){
+    var draft = __savedDraft;
+    var hasContent = draft && ((draft.songs && draft.songs.length) || draft.konti || (draft.laps && draft.laps.length));
+    if(hasContent){
+      currentRecordId = draft.recordId || null;
+      deserialize(draft);
+    }else{
+      var d = new Date(), p = function(n){ return (n<10?'0':'')+n; };
+      $('f-date').value = d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+      render();
+    }
+  })();
+})();
+</script>
+
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+(function(){
+  var deferred = null, btn = document.getElementById('btn-install');
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferred = e; btn.hidden = false; });
+  btn.addEventListener('click', function(){
+    if(!deferred) return;
+    deferred.prompt();
+    deferred.userChoice.finally(function(){ deferred = null; btn.hidden = true; });
+  });
+  window.addEventListener('appinstalled', function(){ btn.hidden = true; });
+})();
+</script>
+</body>
+</html>
