@@ -1,0 +1,760 @@
+<title>HOW_SERVICE_콘티</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<style>
+/* Layout: editor column (songs as numbered cards) beside a live preview of the conti slides; stacks on narrow screens.
+   Single dark look on purpose (black stage background); the slide previews stay white like the printed conti. */
+@font-face{font-family:"Paperlogy";src:url("fonts/Paperlogy-800.woff2") format("woff2");font-weight:800;font-display:swap}
+@font-face{font-family:"SCDream";src:url("fonts/SCDream-400.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"SCDream";src:url("fonts/SCDream-600.woff2") format("woff2");font-weight:600;font-display:swap}
+:root{
+  --bg:#f4f3ef; --panel:#ffffff; --field:#faf9f6; --fg:#1c1b19; --muted:#6a655d; --line:#e1ddd4;
+  --accent:#2f5d8a; --accent-fg:#ffffff; --warn:#a4561c; --sheet:#ffffff;
+  --band:#0a0a0b; --band-fg:#f3f2ef; --band-muted:#a3a3a9; --band-btn:#f5c84c; --band-btn-fg:#141107;
+  --font:"SCDream","Noto Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+  --font-title:"Paperlogy","SCDream","Noto Sans KR",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+h1,h2,button,.num{font-family:var(--font-title)}
+header.top{background:var(--band);color:var(--band-fg);max-width:none;
+  margin:0 calc(-1 * max(16px, env(safe-area-inset-right, 0px))) 18px calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  padding:24px max(16px, calc((100% - 1500px) / 2 + 16px))}
+header.top h1{font-size:30px;font-weight:800;letter-spacing:.01em}
+header.top p{color:var(--band-muted)}
+header.top button.primary{background:var(--band-btn);color:var(--band-btn-fg)}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+header.top{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px}
+header.top h1{margin:0;text-wrap:balance}
+header.top p{margin:2px 0 0;color:var(--muted)}
+.wrap{max-width:1500px;margin:0 auto;display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel h2{font-size:16px;font-weight:800;margin:0}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);min-width:0}
+input[type=text],input[type=date],select,textarea{font:inherit;font-size:14px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:100%}
+textarea{resize:vertical;min-height:52px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+button{font-family:var(--font-title);font-size:14px;font-weight:800;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:8px 12px;cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:transparent}
+button.small{padding:4px 8px;font-size:12px;font-family:var(--font);font-weight:600}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.songs{display:flex;flex-direction:column;gap:10px}
+.song{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--field)}
+.song .bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.song .num{font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;min-width:22px}
+.song .bar .sp{flex:1}
+.checks{display:flex;flex-wrap:wrap;gap:4px 14px}
+.checks label{flex-direction:row;align-items:center;gap:5px;color:var(--fg);font-size:13px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.wsname{margin:0;font-family:var(--font-title);font-weight:800;font-size:18px}
+header.top button:not(.primary){background:transparent;color:var(--band-fg);border-color:#3a3a40}
+header.top button.done{background:#ffffff;color:#141107}
+.archive{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+.archive h2{margin:0;font-size:17px;font-weight:800}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.card.cur{outline:2px solid var(--accent)}
+.card .thumb{aspect-ratio:3/2;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
+.card .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.card .body{padding:9px 10px;display:flex;flex-direction:column;gap:4px}
+.card .ttl{font-family:var(--font-title);font-weight:800;font-size:14.5px;font-variant-numeric:tabular-nums}
+.card .meta{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}
+.chip{font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line)}
+.chip.done{background:var(--accent);color:var(--accent-fg);border-color:transparent}
+.card .acts{display:flex;gap:6px}
+.empty{color:var(--muted);font-size:13px;margin:0;grid-column:1/-1}
+.howto{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0 14px}
+.howto summary{cursor:pointer;padding:12px 0;font-family:var(--font-title);font-weight:800;font-size:16px;color:var(--fg);list-style:none;display:flex;align-items:center;gap:8px}
+.howto summary::-webkit-details-marker{display:none}
+.howto summary::before{content:"▸";color:var(--accent);transition:transform .15s}
+.howto[open] summary::before{transform:rotate(90deg)}
+.howto .steps{margin:0 0 10px;padding:0;list-style:none;counter-reset:st;display:flex;flex-direction:column;gap:10px}
+.howto .steps li{counter-increment:st;display:grid;grid-template-columns:26px minmax(0,1fr);gap:2px 10px;align-items:start}
+.howto .steps li::before{content:counter(st);grid-row:span 2;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--accent-fg);font-family:var(--font-title);font-weight:800;font-size:12.5px;display:flex;align-items:center;justify-content:center}
+.howto .steps b{font-family:var(--font-title);font-weight:800;font-size:14px}
+.howto .steps span{color:var(--muted);font-size:13px;line-height:1.6}
+.howto .steps i{font-style:normal;color:var(--fg);font-weight:600}
+.howto .hint{margin:0 0 12px}
+@media (prefers-reduced-motion:reduce){.howto summary::before{transition:none}}
+.page{border-top:1px dashed var(--line);padding-top:6px;display:flex;flex-direction:column;gap:6px}
+.page canvas.ed{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:6px;cursor:crosshair;touch-action:none;background:#fff}
+.modes{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
+.modes label{flex-direction:row;align-items:center;gap:4px;color:var(--fg);font-size:12.5px}
+.crop{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.crop label{font-size:11px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.file{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.file span{color:var(--muted);font-size:12px;overflow-wrap:anywhere;min-width:0}
+.hint{color:var(--muted);font-size:12px;margin:0}
+.warn{color:var(--warn)}
+.preview{display:flex;flex-direction:column;gap:14px}
+.preview canvas{width:100%;height:auto;background:var(--sheet);border:1px solid var(--line);border-radius:6px;display:block}
+.out{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.status{min-height:1.4em;color:var(--muted);font-size:13px;margin:0}
+details summary{cursor:pointer;color:var(--muted);font-size:13px}
+details ul{margin:6px 0 0;padding-left:18px;color:var(--muted);font-size:12.5px}
+</style>
+
+<header class="top">
+  <div>
+    <h1>HOW_SERVICE_콘티</h1>
+    <p>곡 정보와 악보 사진만 넣으면 섬김팀 콘티 양식대로 장을 나눠 PPT·JPG·PDF로 저장해요.</p>
+  </div>
+  <div class="out" id="wsBtns" hidden>
+    <button class="primary" id="savePpt" type="button">PPT 저장</button>
+    <button class="primary" id="saveJpg" type="button">JPG 저장</button>
+    <button class="primary" id="savePdf" type="button">PDF 저장</button>
+    <button class="primary done" id="doneBtn" type="button">작업 완료</button>
+    <button id="closeWs" type="button">목록으로</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="panel" aria-label="편집">
+    <div id="start" class="stack">
+      <h2>새 콘티</h2>
+      <p class="hint">예배 날짜를 고르면 작업공간이 만들어져요. 작업 내용은 자동으로 저장되고, 완료하면 오른쪽 보관함에 쌓여요.</p>
+      <button class="primary" type="button" id="newBtn">+ 새 콘티</button>
+      <div id="newRow" class="row" hidden>
+        <label>예배 날짜<input type="date" id="newDate"></label>
+        <label>&nbsp;<button class="primary" type="button" id="createBtn">작업공간 만들기</button></label>
+      </div>
+    </div>
+    <div id="editor" class="stack" hidden>
+    <p class="wsname" id="wsName"></p>
+    <h2>1. 콘티 붙여넣기</h2>
+    <label>인도자님 콘티를 그대로 붙여넣으세요<textarea id="paste" rows="7" placeholder="[261115 주일5부 경배와찬양] _김석현 목사&#10;1. 질그릇의 노래 → 그들은 주가 필요해 (C)&#10;Int-AB-ABBB → B*B-Tag*1"></textarea></label>
+    <div class="out"><button class="primary" type="button" id="parseBtn">자동으로 채우기</button></div>
+    <h2>장 나누기</h2>
+    <div class="out">
+      <label style="flex-direction:row;align-items:center;gap:6px;color:var(--fg)">모든 장
+        <select id="perPage" style="width:auto"><option value="1">1곡씩</option><option value="2">2곡씩</option><option value="3" selected>3곡씩</option><option value="each">장마다 정하기</option></select></label>
+    </div>
+    <div id="eachRows" class="out" hidden></div>
+    <p class="hint">곡 수 기준이에요. 악보가 여러 장인 곡을 옆 칸으로 나눠도 한 곡으로 세고 같은 장에 넣어요. 악보가 길면 1곡, 짧으면 3곡처럼 장마다 다르게 고를 수 있어요.</p>
+    <h2>2. 악보 사진</h2>
+    <div class="file"><input type="file" id="bulk" accept="image/*" multiple aria-label="악보 사진 여러 장">
+      <span>여러 장을 한 번에 고르면 파일 이름으로 곡을 찾아 넣고, 못 찾으면 순서대로 넣어요.</span></div>
+    <h2>3. 확인·수정</h2>
+    <div class="row">
+      <label>날짜<input type="date" id="date"></label>
+      <label>예배<select id="service"><option>Newsong J</option><option>주일 5부</option><option value="custom">직접 입력</option></select></label>
+    </div>
+    <div class="row">
+      <label>인도자<input type="text" id="leader" placeholder="예: 김석현 목사님"></label>
+      <label id="customWrap" hidden>예배 이름<input type="text" id="serviceCustom" placeholder="예: 11월 월례회"></label>
+    </div>
+    <h2>곡</h2>
+    <p class="hint">칸 제목은 "번호. 곡 제목 키" (예: 1. 질그릇의 노래 C), 진행은 인도자 콘티 그대로. 메들리는 "앞 칸에 이어 붙이기"를 켜면 같은 칸 아래로 들어가요. 악보 미리보기에서 드래그하면 필요 없는 부분을 지우거나 줄을 뺄 수 있어요.</p>
+    <div class="songs" id="songs"></div>
+    <div class="out"><button type="button" id="addSong">+ 곡 추가</button><button type="button" id="clearAll" class="small">새로 시작</button></div>
+    <h2>4. 목사님께 보내기</h2>
+    <label>보내는 사람<input type="text" id="sender" placeholder="예: 섬김팀 박태영"></label>
+    <label>인사말<textarea id="greet" rows="4"></textarea></label>
+    <div class="out"><button type="button" class="primary" id="copyGreet">인사말 복사</button><span class="hint">카톡 대화방에 붙여넣고 저장한 JPG·PDF를 첨부하세요.</span></div>
+    <details>
+      <summary>양식 규칙 (이전 콘티 기준)</summary>
+      <ul>
+        <li>한 장에 보통 2곡 또는 3곡. 악보가 빽빽하면 2곡, 아주 길면 1곡.</li>
+        <li>악보는 제목·작곡자·저작권 줄을 잘라내고 칸 너비에 꽉 채워요. 세로는 1.5배까지만 늘려요.</li>
+        <li>일부만 부르는 곡은 위·아래 자르기로 그 부분만. 짧아서 비면 "같은 구간 한 번 더".</li>
+        <li>키가 바뀌는 곡은 시작 키 악보 1장만. 키업은 제목 "D-E"와 진행 "(key up)"으로 표시.</li>
+        <li>줄 중간부터 부르면 "지우기"로 앞부분을 하얗게, 2·3절 가사 줄처럼 필요 없는 줄은 "줄 빼기"로 없애요.</li>
+        <li>악보가 없으면 비워 두면 "악보 필요" 칸이 생겨요.</li>
+      </ul>
+    </details>
+    </div>
+  </section>
+
+  <section aria-label="미리보기" class="preview">
+    <p class="status" id="status" role="status"></p>
+    <div id="slides" class="preview"></div>
+    <section class="archive" aria-label="보관함">
+      <h2>보관함</h2>
+      <div id="archive" class="cards"></div>
+    </section>
+    <details class="howto" id="howto">
+      <summary>사용법</summary>
+      <ol class="steps">
+        <li><b>새 콘티 만들기</b><span>[+ 새 콘티] → 예배 날짜 선택. 토요일은 Newsong J, 일요일은 주일 5부로 자동 지정돼요.</span></li>
+        <li><b>콘티 붙여넣기</b><span>인도자님 카톡 콘티를 통째로 붙여넣고 [자동으로 채우기]. 날짜·인도자·곡 제목·키·진행이 들어가요. 링크·시간·BPM·요청 문구는 빠지고, Tag·B* 같은 가사 설명만 남아요.</span></li>
+        <li><b>장 나누기</b><span>모든 장 1·2·3곡씩, 또는 [장마다 정하기]로 장별 곡 수를 따로. 악보가 여러 장인 곡도 1곡으로 세요.</span></li>
+        <li><b>악보 사진 올리기</b><span>[2. 악보 사진]에서 여러 장을 한 번에 고르면 파일 이름으로 곡을 찾아 넣어요. 곡마다 따로 올려도 돼요. 여백은 자동으로 잘려요.</span></li>
+        <li><b>악보 다듬기</b><span>
+          위·아래·좌·우 자르기로 쓰는 부분만 남기기<br>
+          <i>하얗게 지우기</i>: 줄 중간부터 부를 때 앞부분을 드래그<br>
+          <i>줄 빼기</i>: 2·3절 가사 줄처럼 필요 없는 줄을 드래그하면 위아래가 붙어요<br>
+          여러 장 악보는 [같은 칸에 아래로] 또는 [옆 칸으로 나누기]</span></li>
+        <li><b>메들리·반복</b><span>[앞 칸에 이어 붙이기]: 다음 곡을 같은 칸 아래로. [같은 구간 한 번 더]: 짧은 후렴(BB)을 두 번 넣어 칸 채우기.</span></li>
+        <li><b>저장하기</b><span>위쪽 띠의 [PPT 저장] [JPG 저장] [PDF 저장]. PPT는 글자·악보를 PowerPoint에서 바로 고칠 수 있어요.</span></li>
+        <li><b>목사님께 보내기</b><span>보내는 사람을 적으면 인사말이 만들어져요. [인사말 복사] → 카톡에 붙여넣고 JPG·PDF 첨부.</span></li>
+        <li><b>작업 완료·보관</b><span>[작업 완료]를 누르면 이 보관함에 날짜·인도자 카드로 쌓여요. 작업 내용은 자동 저장되고, 카드의 [열기]로 언제든 이어서 고칠 수 있어요.</span></li>
+      </ol>
+      <p class="hint">보관함과 올린 사진은 지금 쓰는 브라우저 안에만 저장돼요. 다른 PC·휴대폰에서는 보이지 않아요.</p>
+    </details>
+  </section>
+</div>
+
+<script>
+const PW = 850.375, PH = 566.875, SCALE = 2400 / PW;   // slide size in pt, export at 2400px wide
+const FONT = '"Noto Sans KR","Malgun Gothic",sans-serif';
+const $ = id => document.getElementById(id);
+let songs = [], seq = 0;
+
+function newSong(o = {}) {
+  return { id: ++seq, head: o.head || '', prog: o.prog || '', newSlide: !!o.newSlide, join: !!o.join, dup: false,
+           pages: [], split: 'stack' };   // pages: [{img, name, crop}]; split: stack | side
+}
+function serviceName() { return $('service').value === 'custom' ? ($('serviceCustom').value.trim() || '경배와 찬양') : $('service').value; }
+
+/* ---------- workspaces: each conti is saved in this browser (IndexedDB) and listed in the archive ---------- */
+let curId = null, wsTimer = 0, curDone = false;
+function idb() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('conti-tool', 2);
+    r.onupgradeneeded = () => { const db = r.result; if (!db.objectStoreNames.contains('ws')) db.createObjectStore('ws', { keyPath: 'id' }); };
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+async function wsAll() { const db = await idb(); return new Promise((res, rej) => { const r = db.transaction('ws').objectStore('ws').getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => rej(r.error); }); }
+async function wsGet(id) { const db = await idb(); return new Promise((res, rej) => { const r = db.transaction('ws').objectStore('ws').get(id); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+async function wsPut(w) { const db = await idb(); return new Promise((res, rej) => { const tx = db.transaction('ws', 'readwrite'); tx.objectStore('ws').put(w); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+async function wsDel(id) { const db = await idb(); return new Promise((res, rej) => { const tx = db.transaction('ws', 'readwrite'); tx.objectStore('ws').delete(id); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+
+function snapshot(extra = {}) {
+  return Object.assign({
+    id: curId, done: curDone, updated: Date.now(),
+    date: $('date').value, service: $('service').value, serviceCustom: $('serviceCustom').value, leader: $('leader').value,
+    sender: $('sender').value, paste: $('paste').value, greet: $('greet').value, greetEdited,
+    perPage: $('perPage').value, slideCounts: slideCounts.slice(),
+    songs: songs.map(s => ({ head: s.head, prog: s.prog, join: s.join, dup: s.dup, split: s.split,
+      pages: s.pages.filter(p => p.blob).map(p => ({ blob: p.blob, name: p.name, crop: p.crop, marks: p.marks || [] })) }))
+  }, extra);
+}
+function saveText() { if (!curId) return; clearTimeout(wsTimer); wsTimer = setTimeout(saveWsNow, 600); }
+const savePagesSoon = saveText;
+async function saveWsNow(extra) {
+  if (!curId) return;
+  try { const old = await wsGet(curId); await wsPut(snapshot(Object.assign({ thumb: old && old.thumb }, extra))); renderArchive(); }
+  catch (e) { $('status').textContent = '이 브라우저에 저장하지 못했어요. 시크릿 창이면 일반 창으로 열어 주세요.'; }
+}
+
+function wsTitle(w) { return `${w.date || '날짜 미정'} ${(w.leader || '').trim() || '인도자 미정'}`; }
+async function renderArchive() {
+  let list = []; try { list = await wsAll(); } catch (e) {}
+  list.sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.updated - a.updated);
+  const box = $('archive'); box.replaceChildren();
+  if (!list.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = '아직 보관된 콘티가 없어요. 왼쪽 [+ 새 콘티]로 시작하세요.'; box.append(p); return; }
+  for (const w of list) {
+    const c = document.createElement('div'); c.className = 'card' + (w.id === curId ? ' cur' : '');
+    const th = document.createElement('div'); th.className = 'thumb';
+    if (w.thumb) { const im = document.createElement('img'); im.src = w.thumb; im.alt = wsTitle(w) + ' 1장'; th.append(im); } else th.textContent = '미리보기 없음';
+    const body = document.createElement('div'); body.className = 'body';
+    const ttl = document.createElement('div'); ttl.className = 'ttl'; ttl.textContent = wsTitle(w);
+    const meta = document.createElement('div'); meta.className = 'meta';
+    const chip = document.createElement('span'); chip.className = 'chip' + (w.done ? ' done' : ''); chip.textContent = w.done ? '완료' : '작업 중';
+    const svc = document.createElement('span'); svc.textContent = w.service === 'custom' ? (w.serviceCustom || '') : (w.service || '');
+    meta.append(chip, svc);
+    const acts = document.createElement('div'); acts.className = 'acts';
+    const open = document.createElement('button'); open.type = 'button'; open.className = 'small'; open.textContent = w.id === curId ? '열려 있음' : '열기'; open.disabled = w.id === curId;
+    open.onclick = () => openWs(w.id);
+    const del = document.createElement('button'); del.type = 'button'; del.className = 'small'; del.textContent = '삭제';
+    del.onclick = async () => {
+      if (del.dataset.sure !== '1') { del.dataset.sure = '1'; del.textContent = '정말 삭제'; setTimeout(() => { del.dataset.sure = ''; del.textContent = '삭제'; }, 3000); return; }
+      await wsDel(w.id); if (w.id === curId) closeWs(); renderArchive();
+    };
+    acts.append(open, del); body.append(ttl, meta, acts); c.append(th, body); box.append(c);
+  }
+}
+
+function showWs(on) {
+  $('start').hidden = on; $('editor').hidden = !on; $('wsBtns').hidden = !on;
+  if (!on) { $('slides').replaceChildren(); canvases = []; layouts = []; $('status').textContent = '새 콘티를 만들거나 보관함에서 열어 주세요.'; }
+}
+function fillForm(w) {
+  $('date').value = w.date || ''; $('leader').value = w.leader || ''; $('sender').value = w.sender || ''; $('paste').value = w.paste || '';
+  if (['Newsong J', '주일 5부'].includes(w.service)) $('service').value = w.service; else { $('service').value = 'custom'; $('serviceCustom').value = w.serviceCustom || ''; }
+  $('customWrap').hidden = $('service').value !== 'custom';
+  $('perPage').value = w.perPage || '3'; slideCounts = (w.slideCounts && w.slideCounts.length) ? w.slideCounts.slice() : [3, 3];
+  greetEdited = !!w.greetEdited; $('greet').value = w.greet || ''; refreshGreeting();
+  songs = (w.songs || []).map(x => { const s = newSong(x); s.dup = !!x.dup; s.split = x.split || 'stack'; return s; });
+  if (!songs.length) songs = [newSong({ head: '1. ' })];
+}
+async function openWs(id) {
+  const w = await wsGet(id); if (!w) return;
+  curId = w.id; curDone = !!w.done; fillForm(w); showWs(true);
+  $('wsName').textContent = wsTitle(w);
+  renderEditor(); render(); renderArchive();
+  (w.songs || []).forEach((x, i) => (x.pages || []).forEach(pg => loadImage(songs[i], pg.blob, pg)));
+  $('status').textContent = `${wsTitle(w)} 작업공간을 열었어요.`;
+}
+function closeWs() { curId = null; songs = []; showWs(false); renderArchive(); }
+async function createWs(date) {
+  const day = new Date(date + 'T00:00').getDay();
+  const w = { id: 'w' + Date.now().toString(36), date, done: false, updated: Date.now(),
+    service: day === 6 ? 'Newsong J' : day === 0 ? '주일 5부' : 'custom', serviceCustom: '', leader: '', sender: localSender(), paste: '',
+    perPage: '3', slideCounts: [3, 3], songs: [{ head: '1. ', prog: '' }] };
+  await wsPut(w); await openWs(w.id);
+  $('status').textContent = '작업공간을 만들었어요. 인도자님 콘티를 붙여넣고 [자동으로 채우기]를 누르세요.';
+}
+function localSender() { try { return localStorage.getItem('conti-tool-sender') || ''; } catch (e) { return ''; } }
+/* ---------- editor ---------- */
+function renderEditor() {
+  const box = $('songs'); box.replaceChildren();
+  songs.forEach((s, i) => {
+    const card = document.createElement('div'); card.className = 'song';
+    card.innerHTML = `
+      <div class="bar"><span class="num">${i + 1}</span>
+        <span class="sp"></span>
+        <button type="button" class="small" data-act="up" aria-label="위로">▲</button>
+        <button type="button" class="small" data-act="down" aria-label="아래로">▼</button>
+        <button type="button" class="small" data-act="del">삭제</button></div>
+      <label>칸 제목<textarea id="head-${s.id}" data-k="head" rows="${s.head.includes('\n') ? 2 : 1}" style="min-height:0"></textarea></label>
+      <label>진행<textarea id="prog-${s.id}" data-k="prog" rows="2"></textarea></label>
+      <div class="checks">
+        <label><input type="checkbox" id="jn-${s.id}" data-k="join">앞 칸에 이어 붙이기</label>
+        <label><input type="checkbox" id="dp-${s.id}" data-k="dup">같은 구간 한 번 더</label>
+      </div>
+      <div class="file"><input type="file" id="file-${s.id}" accept="image/*" multiple aria-label="악보 이미지">
+        <span>${s.pages.length ? `악보 ${s.pages.length}장` : '악보 이미지를 고르세요. 여러 장도 돼요 (없으면 "악보 필요" 칸)'}</span></div>
+      ${s.pages.length > 1 ? `<label style="flex-direction:row;align-items:center;gap:6px;color:var(--fg)">여러 장일 때
+        <select id="split-${s.id}" data-k="split" style="width:auto"><option value="stack">같은 칸에 아래로 이어 붙이기</option><option value="side">옆 칸으로 나누기 (장마다 한 칸)</option></select></label>` : ''}
+      ${s.pages.map((p, pi) => `<div class="page" data-pi="${pi}">
+        <div class="bar"><span class="hint">${pi + 1}. ${p.name}</span><span class="sp"></span>
+          ${s.pages.length > 1 ? `<button type="button" class="small" data-act="pup" data-pi="${pi}" aria-label="앞으로">◀</button>` : ''}
+          <button type="button" class="small" data-act="trim" data-pi="${pi}">여백 자동</button>
+          <button type="button" class="small" data-act="clearimg" data-pi="${pi}">빼기</button></div>
+        <div class="crop">${['t:위', 'b:아래', 'l:왼쪽', 'r:오른쪽'].map(x => { const [k, n] = x.split(':'); return `<label>${n} 자르기 <input type="range" min="0" max="80" step="0.5" id="c${k}-${s.id}-${pi}" data-crop="${k}" data-pi="${pi}"></label>`; }).join('')}</div>
+        <div class="modes"><span class="hint">드래그로</span>
+          <label><input type="radio" name="mode-${s.id}-${pi}" value="e" ${p.mode !== 'c' ? 'checked' : ''} data-mode data-pi="${pi}">하얗게 지우기</label>
+          <label><input type="radio" name="mode-${s.id}-${pi}" value="c" ${p.mode === 'c' ? 'checked' : ''} data-mode data-pi="${pi}">줄 빼기 (위아래 붙이기)</label>
+          <button type="button" class="small" data-act="undo" data-pi="${pi}" ${p.marks && p.marks.length ? '' : 'disabled'}>되돌리기</button></div>
+        <canvas class="ed" data-pi="${pi}" aria-label="악보 편집 미리보기 ${pi + 1}"></canvas>
+      </div>`).join('')}`;
+    card.querySelector('[data-k=head]').value = s.head;
+    card.querySelector('[data-k=prog]').value = s.prog;
+    card.querySelector('[data-k=join]').checked = s.join;
+    card.querySelector('[data-k=dup]').checked = s.dup;
+    card.querySelectorAll('[data-crop]').forEach(r => r.value = s.pages[+r.dataset.pi].crop[r.dataset.crop]);
+    const spl = card.querySelector('[data-k=split]'); if (spl) spl.value = s.split;
+    card.addEventListener('input', e => {
+      const k = e.target.dataset.k, c = e.target.dataset.crop;
+      if (k === 'head' || k === 'prog' || k === 'split') s[k] = e.target.value;
+      else if (k) s[k] = e.target.checked;
+      else if (c) { const pg = s.pages[+e.target.dataset.pi]; pg.crop[c] = +e.target.value; pg.proc = null; drawEditor(card, s); }
+      else if ('mode' in e.target.dataset) { s.pages[+e.target.dataset.pi].mode = e.target.value; return; }
+      else return;
+      saveText(); scheduleRender();
+    });
+    card.querySelectorAll('canvas.ed').forEach(cv => attachDrag(cv, s, card));
+    drawEditor(card, s);
+    card.querySelector('input[type=file]').addEventListener('change', e => { [...e.target.files].forEach(f => loadImage(s, f)); e.target.value = ''; });
+    card.addEventListener('click', e => {
+      const a = e.target.dataset.act; if (!a) return;
+      if (a === 'del') songs.splice(i, 1);
+      if (a === 'up' && i > 0) [songs[i - 1], songs[i]] = [songs[i], songs[i - 1]];
+      if (a === 'down' && i < songs.length - 1) [songs[i + 1], songs[i]] = [songs[i], songs[i + 1]];
+      const pi = +e.target.dataset.pi;
+      if (a === 'trim') { autoTrim(s.pages[pi]); s.pages[pi].proc = null; }
+      if (a === 'undo') { s.pages[pi].marks.pop(); s.pages[pi].proc = null; }
+      if (a === 'clearimg') { s.pages.splice(pi, 1); savePagesSoon(); }
+      if (a === 'pup' && pi > 0) [s.pages[pi - 1], s.pages[pi]] = [s.pages[pi], s.pages[pi - 1]];
+      saveText(); renderEditor(); scheduleRender();
+    });
+    box.append(card);
+  });
+}
+
+/* ---------- per-page editing: drag to erase (white box) or cut a horizontal band ---------- */
+// page = {img, blob, name, crop{t,b,l,r} %, marks:[{k:'e',x,y,w,h} | {k:'c',y0,y1}] as fractions of the original, mode, proc}
+function drawEditor(card, s) {
+  card.querySelectorAll('canvas.ed').forEach(cv => {
+    const p = s.pages[+cv.dataset.pi]; if (!p || !p.img) return;
+    const W = 720, H = Math.round(W * p.img.naturalHeight / p.img.naturalWidth);
+    cv.width = W; cv.height = H; const x = cv.getContext('2d');
+    x.fillStyle = '#fff'; x.fillRect(0, 0, W, H); x.drawImage(p.img, 0, 0, W, H);
+    for (const m of p.marks || []) {
+      if (m.k === 'e') { x.fillStyle = 'rgba(255,255,255,.92)'; x.fillRect(m.x * W, m.y * H, m.w * W, m.h * H); x.strokeStyle = '#2f5d8a'; x.setLineDash([6, 4]); x.strokeRect(m.x * W, m.y * H, m.w * W, m.h * H); x.setLineDash([]); }
+      else { x.fillStyle = 'rgba(200,40,40,.28)'; x.fillRect(0, m.y0 * H, W, (m.y1 - m.y0) * H); }
+    }
+    const c = p.crop; x.fillStyle = 'rgba(30,30,30,.35)';
+    x.fillRect(0, 0, W, c.t / 100 * H); x.fillRect(0, H - c.b / 100 * H, W, c.b / 100 * H);
+    x.fillRect(0, 0, c.l / 100 * W, H); x.fillRect(W - c.r / 100 * W, 0, c.r / 100 * W, H);
+  });
+}
+function attachDrag(cv, s, card) {
+  let start = null;
+  const pos = e => { const r = cv.getBoundingClientRect(); return { x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)) }; };
+  cv.addEventListener('pointerdown', e => { start = pos(e); cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => {
+    if (!start) return; const p = s.pages[+cv.dataset.pi], q = pos(e); drawEditor(card, s);
+    const x = cv.getContext('2d'), W = cv.width, H = cv.height;
+    if (p.mode === 'c') { x.fillStyle = 'rgba(200,40,40,.35)'; x.fillRect(0, Math.min(start.y, q.y) * H, W, Math.abs(q.y - start.y) * H); }
+    else { x.strokeStyle = '#2f5d8a'; x.lineWidth = 2; x.strokeRect(Math.min(start.x, q.x) * W, Math.min(start.y, q.y) * H, Math.abs(q.x - start.x) * W, Math.abs(q.y - start.y) * H); }
+  });
+  cv.addEventListener('pointerup', e => {
+    if (!start) return; const p = s.pages[+cv.dataset.pi], q = pos(e), a = start; start = null;
+    if (Math.abs(q.y - a.y) < 0.004) { drawEditor(card, s); return; }
+    p.marks = p.marks || [];
+    if (p.mode === 'c') p.marks.push({ k: 'c', y0: Math.min(a.y, q.y), y1: Math.max(a.y, q.y) });
+    else { if (Math.abs(q.x - a.x) < 0.004) { drawEditor(card, s); return; } p.marks.push({ k: 'e', x: Math.min(a.x, q.x), y: Math.min(a.y, q.y), w: Math.abs(q.x - a.x), h: Math.abs(q.y - a.y) }); }
+    p.proc = null; saveText(); renderEditor(); scheduleRender();
+  });
+}
+/* the sheet as it goes on the slide: crop, white-out erase boxes, then close up the cut bands */
+function pageSource(p) {
+  if (p.proc) return p.proc;
+  const im = p.img, W = im.naturalWidth, H = im.naturalHeight, c = p.crop;
+  const x0 = W * c.l / 100, x1 = W * (1 - c.r / 100), y0 = H * c.t / 100, y1 = H * (1 - c.b / 100);
+  const cuts = (p.marks || []).filter(m => m.k === 'c').map(m => [m.y0 * H, m.y1 * H]).sort((a, b) => a[0] - b[0]);
+  const keep = []; let y = y0;
+  for (const [a, b] of cuts) { if (b <= y || a >= y1) continue; if (a > y) keep.push([y, Math.min(a, y1)]); y = Math.max(y, b); }
+  if (y < y1) keep.push([y, y1]);
+  const w = Math.max(1, Math.round(x1 - x0)), h = Math.max(1, Math.round(keep.reduce((t, [a, b]) => t + b - a, 0)));
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const x = cv.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
+  let dy = 0;
+  for (const [a, b] of keep) {
+    x.drawImage(im, x0, a, x1 - x0, b - a, 0, dy, x1 - x0, b - a);
+    x.fillStyle = '#fff';
+    for (const m of (p.marks || []).filter(m => m.k === 'e')) {
+      const ry0 = Math.max(a, m.y * H), ry1 = Math.min(b, (m.y + m.h) * H); if (ry1 <= ry0) continue;
+      x.fillRect(m.x * W - x0, dy + ry0 - a, m.w * W, ry1 - ry0);
+    }
+    dy += b - a;
+  }
+  p.proc = cv; return cv;
+}
+
+function loadImage(s, file, saved) {
+  if (!file) return;
+  const url = URL.createObjectURL(file), img = new Image();
+  const page = { img: null, blob: file, name: saved ? saved.name : file.name, crop: saved ? saved.crop : { t: 0, b: 0, l: 0, r: 0 }, marks: saved ? saved.marks || [] : [], mode: 'e', proc: null }; s.pages.push(page);
+  img.onload = () => { page.img = img; if (!saved) autoTrim(page); s.pages.sort((p, q) => p.name.localeCompare(q.name, 'ko', { numeric: true })); renderEditor(); scheduleRender(); savePagesSoon(); };
+  img.onerror = () => { s.pages.splice(s.pages.indexOf(page), 1); $('status').textContent = '이미지를 열 수 없어요. jpg나 png로 올려 주세요.'; };
+  img.src = url;
+}
+
+/* trim white margins: find the ink box, then leave a small pad */
+function autoTrim(s) {   // s = a page {img, crop}
+  const img = s.img; if (!img) return;
+  const w = Math.min(800, img.naturalWidth), h = Math.round(img.naturalHeight * w / img.naturalWidth);
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d', { willReadFrequently: true }); x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(img, 0, 0, w, h);
+  const d = x.getImageData(0, 0, w, h).data;
+  let t = h, b = -1, l = w, r = -1;
+  for (let y = 0; y < h; y++) for (let xx = 0; xx < w; xx++) {
+    const i = (y * w + xx) * 4; if (d[i] + d[i + 1] + d[i + 2] < 480) { if (y < t) t = y; if (y > b) b = y; if (xx < l) l = xx; if (xx > r) r = xx; }
+  }
+  if (b < 0) return;
+  const pad = 0.006;
+  s.crop = { t: Math.max(0, t / h - pad) * 100, b: Math.max(0, 1 - b / h - pad) * 100, l: Math.max(0, l / w - pad) * 100, r: Math.max(0, 1 - r / w - pad) * 100 };
+}
+
+/* ---------- layout (same rules as the team's PowerPoint template) ---------- */
+let slideCounts = [3, 3];   // used when "장마다 정하기"
+function columns() {
+  const cols = []; let col = null;
+  const items = (s, label) => {
+    const ps = s.pages.filter(p => p.img), reps = s.dup ? 2 : 1, out = [];
+    for (let r = 0; r < reps; r++) (ps.length ? ps : [null]).forEach(p => out.push({ s, p }));
+    if (label && out.length) out[0].label = label;
+    return out;
+  };
+  songs.forEach(s => {
+    const head = [s.head, '', s.prog].join('\n').replace(/\n\n$/, '');
+    if (s.join && col) { col.items.push(...items(s, [s.head, s.prog].filter(Boolean).join('\n'))); return; }
+    const ps = s.pages.filter(p => p.img);
+    const g = s.id;   // columns of one song share a group: counted as one song, kept on one slide
+    if (s.split === 'side' && ps.length > 1) {
+      ps.forEach((p, k) => { col = { g, head: k === 0 ? head : '', items: [{ s, p }] }; cols.push(col); });
+      return;
+    }
+    col = { g, head, items: items(s) }; cols.push(col);
+  });
+  return cols;
+}
+function buildSlides() {
+  const units = songUnits(), slides = [], mode = $('perPage').value;
+  let i = 0, k = 0;
+  while (i < units.length) {
+    const n = mode === 'each' ? (slideCounts[k] || slideCounts[slideCounts.length - 1] || 3) : +mode;
+    slides.push(units.slice(i, i + n).flat()); i += n; k++;
+  }
+  return slides;
+}
+function songUnits() {   // [[col, col], [col], ...] — one entry per song (its columns together)
+  const units = [];
+  for (const c of columns()) { const last = units[units.length - 1]; if (last && last[0].g === c.g) last.push(c); else units.push([c]); }
+  return units;
+}
+function renderEachRows() {
+  const box = $('eachRows'), each = $('perPage').value === 'each'; box.hidden = !each; if (!each) return;
+  const total = songUnits().length; let sum = 0, k = 0;
+  while (sum < total) { if (k >= slideCounts.length) slideCounts.push(slideCounts[slideCounts.length - 1] || 3); sum += slideCounts[k]; k++; }
+  slideCounts.length = Math.max(k, 1);
+  box.replaceChildren(...slideCounts.map((n, i) => {
+    const l = document.createElement('label'); l.style.cssText = 'flex-direction:row;align-items:center;gap:4px;color:var(--fg)';
+    l.append(`${i + 1}장`);
+    const sel = document.createElement('select'); sel.style.width = 'auto'; sel.id = 'each-' + i;
+    [1, 2, 3, 4].forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v + '곡'; if (v === n) o.selected = true; sel.append(o); });
+    sel.onchange = () => { slideCounts[i] = +sel.value; saveText(); scheduleRender(); };
+    l.append(sel); return l;
+  }));
+}
+
+function wrapLines(ctx, text, maxW) {
+  const out = [];
+  for (const para of text.split('\n')) {
+    if (!para) { out.push(''); continue; }
+    let line = '';
+    for (const ch of para) { const t = line + ch; if (ctx.measureText(t).width > maxW && line) { out.push(line); line = ch; } else line = t; }
+    out.push(line);
+  }
+  return out;
+}
+
+/* positions in pt: [{t:'text',lines,x,y,w,h} | {t:'img',im,sx,sy,sw,sh,x,y,w,h} | {t:'miss',name,x,y,w,h}] */
+const LH = 12 * 1.35;
+const measure = document.createElement('canvas').getContext('2d');
+function layoutSlide(cols, first) {
+  const els = [], n = Math.max(cols.length, 1), gap = 16, cw = (PW - gap * (n + 1)) / n;
+  measure.font = `700 12px ${FONT}`;
+  const wrap = (txt, w) => wrapLines(measure, txt, w * 0.96);
+  if (first) {
+    const d = $('date').value ? $('date').value.replace(/-/g, '.') + '.' : 'YYYY.MM.DD.';
+    const lines = [`${d} ${serviceName()} 경배와 찬양`, `인도: ${$('leader').value.trim() || 'OOO 목사님'}`];
+    els.push({ t: 'text', lines, x: gap, y: 9, w: cw, h: lines.length * LH });
+  }
+  const top = first ? 50 : 10; let maxBottom = top;
+  cols.forEach((c, k) => { const lines = wrap(c.head, cw); els.push({ t: 'text', lines, x: gap + k * (cw + gap), y: top, w: cw, h: lines.length * LH }); maxBottom = Math.max(maxBottom, top + lines.length * LH); });
+  const picTop = maxBottom + 6, avail = PH - picTop - 6;
+  cols.forEach((c, k) => {
+    const left = gap + k * (cw + gap), w = cw, parts = []; let labelH = 0, natural = 0;
+    c.items.forEach(it => {
+      if (it.label) { const ls = wrap(it.label, w); parts.push({ label: ls }); labelH += ls.length * LH + 12; }
+      if (!it.p) { parts.push({ missing: it.s }); natural += avail * 0.5; return; }
+      const src = pageSource(it.p);
+      parts.push({ im: src, sx: 0, sy: 0, sw: src.width, sh: src.height }); natural += w * src.height / src.width;
+    });    const onlyMissing = parts.every(p => p.missing || p.label);
+    let scale = (avail - labelH) / Math.max(natural, 1); if (!onlyMissing) scale = Math.min(scale, 1.5);
+    let y = picTop, firstPart = true;
+    for (const p of parts) {
+      if (p.label) { if (!firstPart) y += 8; els.push({ t: 'text', lines: p.label, x: left, y, w, h: p.label.length * LH }); y += p.label.length * LH + 4; firstPart = false; continue; }
+      if (p.missing) { const h = onlyMissing ? (PH - y - 6) : avail * 0.5 * scale; els.push({ t: 'miss', name: p.missing.head.replace(/^\[.*?\]\s*/s, '').replace(/^[\d.→+\s]+/, ''), x: left, y, w, h }); y += h; firstPart = false; continue; }
+      const h = w * p.sh / p.sw * scale; els.push({ t: 'img', im: p.im, sx: p.sx, sy: p.sy, sw: p.sw, sh: p.sh, x: left, y, w, h }); y += h; firstPart = false;
+    }
+  });
+  return els;
+}
+
+function drawSlide(els) {
+  const S = SCALE, cv = document.createElement('canvas'); cv.width = Math.round(PW * S); cv.height = Math.round(PH * S);
+  const ctx = cv.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+  for (const e of els) {
+    if (e.t === 'text') {
+      ctx.font = `700 ${12 * S}px ${FONT}`; ctx.fillStyle = '#000'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      e.lines.forEach((ln, k) => ctx.fillText(ln, (e.x + e.w / 2) * S, (e.y + k * LH) * S));
+    } else if (e.t === 'miss') {
+      ctx.save(); ctx.setLineDash([8 * S / 3, 6 * S / 3]); ctx.strokeStyle = '#a0a0a0'; ctx.lineWidth = 1.5 * S; ctx.strokeRect(e.x * S, e.y * S, e.w * S, e.h * S); ctx.restore();
+      ctx.font = `700 ${14 * S}px ${FONT}`; ctx.fillStyle = '#808080'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('악보 필요', (e.x + e.w / 2) * S, (e.y + e.h / 2 - 10) * S); ctx.fillText(e.name, (e.x + e.w / 2) * S, (e.y + e.h / 2 + 10) * S);
+    } else {
+      ctx.imageSmoothingQuality = 'high'; ctx.drawImage(e.im, e.sx, e.sy, e.sw, e.sh, e.x * S, e.y * S, e.w * S, e.h * S);
+    }
+  }
+  return cv;
+}
+
+let canvases = [], layouts = [], timer = 0;
+function scheduleRender() { clearTimeout(timer); timer = setTimeout(render, 120); }
+function render() {
+  if (!curId) return;
+  renderEachRows();
+  $('wsName').textContent = wsTitle({ date: $('date').value, leader: $('leader').value });
+  const slides = buildSlides(), box = $('slides'); box.replaceChildren();
+  layouts = slides.map((cols, i) => layoutSlide(cols, i === 0));
+  canvases = layouts.map(drawSlide);
+  canvases.forEach((c, i) => { c.setAttribute('role', 'img'); c.setAttribute('aria-label', `${i + 1}장 미리보기`); box.append(c); });
+  const missing = songs.filter(s => !s.pages.some(p => p.img)).length;
+  $('status').innerHTML = `${slides.length}장 · 곡 ${songs.length}개` + (missing ? ` · <span class="warn">악보 없는 칸 ${missing}개</span>` : '');
+}
+
+/* editable PowerPoint: text boxes + cropped sheet images at the same positions */
+function cropToDataUrl(e) {
+  const maxW = 2000, w = Math.min(maxW, Math.round(e.sw)), h = Math.round(w * e.sh / e.sw);
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.imageSmoothingQuality = 'high'; x.drawImage(e.im, e.sx, e.sy, e.sw, e.sh, 0, 0, w, h);
+  return c.toDataURL('image/png');
+}
+async function buildPptx() {
+  const P = new window.PptxGenJS(), IN = v => v / 72;
+  P.defineLayout({ name: 'CONTI', width: IN(PW), height: IN(PH) }); P.layout = 'CONTI';
+  for (const els of layouts) {
+    const sl = P.addSlide(); sl.background = { color: 'FFFFFF' };
+    for (const e of els) {
+      if (e.t === 'text') sl.addText(e.lines.join('\n'), { x: IN(e.x), y: IN(e.y), w: IN(e.w), h: IN(e.h + 4), fontFace: '맑은 고딕', fontSize: 12, bold: true, color: '000000', align: 'center', valign: 'top', margin: 0, lineSpacing: LH, fit: 'none' });
+      else if (e.t === 'miss') sl.addText(`악보 필요\n${e.name}`, { x: IN(e.x), y: IN(e.y), w: IN(e.w), h: IN(e.h), fontFace: '맑은 고딕', fontSize: 14, bold: true, color: '808080', align: 'center', valign: 'middle', line: { color: 'A0A0A0', width: 1.5, dashType: 'dash' } });
+      else sl.addImage({ data: cropToDataUrl(e), x: IN(e.x), y: IN(e.y), w: IN(e.w), h: IN(e.h) });
+    }
+  }
+  return P.write({ outputType: 'blob' });
+}
+/* ---------- export ---------- */
+let downloads = null;
+(async () => { try { downloads = await window.claude?.use?.('downloads'); } catch (e) { downloads = null; } })();
+function baseName() { const d = ($('date').value || '').replace(/-/g, ''); return `${d || 'YYYYMMDD'} ${($('leader').value.trim() || '인도자').replace(/\s+/g, '')}`; }
+async function saveBlob(blob, name) {
+  if (!downloads) {   // plain browser (shared HTML file): ordinary download
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    await new Promise(r => setTimeout(r, 350)); return true;
+  }
+  try { await downloads.save({ filename: name, data: blob }); return true; }
+  catch (e) { $('status').textContent = e && e.code === 'declined' ? '저장을 취소했어요.' : '저장이 안 됐어요. 잠시 후 다시 눌러 주세요.'; return false; }
+}
+$('savePpt').onclick = async () => {
+  if (!layouts.length || !window.PptxGenJS) { $('status').textContent = 'PPT 도구를 불러오지 못했어요. 새로고침해 주세요.'; return; }
+  $('status').textContent = 'PPT를 만드는 중…';
+  try { const blob = await buildPptx(); if (await saveBlob(blob, `${baseName()}.pptx`)) $('status').textContent = 'PPT를 저장했어요. 글자와 악보를 PowerPoint에서 바로 고칠 수 있어요.'; }
+  catch (e) { $('status').textContent = 'PPT를 만들지 못했어요: ' + (e && e.message || e); }
+};
+$('saveJpg').onclick = async () => {
+  if (!canvases.length) return;
+  for (let i = 0; i < canvases.length; i++) {
+    const blob = await new Promise(r => canvases[i].toBlob(r, 'image/jpeg', 0.92));
+    if (!(await saveBlob(blob, `${baseName()}_${i + 1}.jpg`))) return;
+  }
+  $('status').textContent = `JPG ${canvases.length}장을 저장했어요.`;
+};
+$('savePdf').onclick = async () => {
+  if (!canvases.length || !window.jspdf) { $('status').textContent = 'PDF 도구를 불러오지 못했어요. 새로고침해 주세요.'; return; }
+  const pdf = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'pt', format: [PW, PH] });
+  canvases.forEach((c, i) => { if (i) pdf.addPage([PW, PH], 'landscape'); pdf.addImage(c.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, PW, PH); });
+  if (await saveBlob(pdf.output('blob'), `${baseName()}.pdf`)) $('status').textContent = 'PDF를 저장했어요.';
+};
+
+/* ---------- paste parser: leader's KakaoTalk conti -> songs ---------- */
+const KEY = '[A-G][#b♭]?(?:\\s*(?:-|->|→)\\s*[A-G][#b♭]?)*';
+function parseConti(text) {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const out = { songs: [] };
+  const head = lines.slice(0, 2).join(' ');
+  const dm = head.match(/(?:20)?(\d{2})[.\-\/]?(\d{2})[.\-\/]?(\d{2})/);
+  if (dm) out.date = `20${dm[1]}-${dm[2]}-${dm[3]}`;
+  if (/5\s*부/.test(head)) out.service = '주일 5부';
+  else if (/뉴송|newsong/i.test(head)) out.service = 'Newsong J';
+  else { const mm = head.match(/(\d{1,2})\s*월\s*월례회/); if (mm) out.service = `${+mm[1]}월 월례회`; }
+  const lm = head.match(/_\s*([가-힣]{2,4})\s*(목사님|목사|전도사님|전도사|간사님|간사)?/) || head.match(/인도\s*[:：]?\s*([가-힣]{2,4})\s*(목사님|목사|전도사님|전도사)?/);
+  if (lm) out.leader = `${lm[1]} ${(lm[2] || '목사').replace(/님$/, '')}님`;
+  let cur = null, who = ''; const songsRaw = [];
+  const LEAD = /^\[\s*([가-힣]{2,4})\s*(목사님|목사|전도사님|전도사|간사님|간사)\s*\]\s*/;
+  for (let l of lines) {
+    const lw = l.match(LEAD);   // several leaders: "[김윤찬 목사님]" on its own line or before the song
+    if (lw) { who = `${lw[1]} ${lw[2].replace(/님$/, '')}님`; l = l.slice(lw[0].length).trim(); if (!l) continue; }
+    const t = l.match(/^(\d+)\s*[.)]\s*(.+)$/);
+    if (t) { cur = { no: t[1], title: t[2], prog: [], notes: [], who }; songsRaw.push(cur); continue; }
+    if (!cur || /^https?:\/\//i.test(l) || /youtu/i.test(l)) continue;
+    // keep only lyric definitions ("Tag : '…'", "B*은 '…'로"); requests like "첫 A* 자매 솔로" are left out
+    if (/^[*\-•※]/.test(l)) { if (/(tag|bis|[A-D]\d*\s*[*'’]|후렴)/i.test(l) && /[:'‘’"“”]/.test(l)) cur.notes.push(l.replace(/^[*\-•※]\s*/, '')); continue; }
+    cur.prog.push(l);
+  }
+  const leaders = [...new Set(songsRaw.map(r => r.who).filter(Boolean))];
+  if (leaders.length > 1 && !out.leader) out.leader = leaders.join(', ');
+  for (const r of songsRaw) {
+    let title = r.title, key = '';
+    // only title + key go on the slide: drop a trailing "/", "/ 86", "/ 4분 23초", "/ 4:23"
+    title = title.replace(/\s*\/\s*(?:\d+\s*(?:bpm)?|\d+\s*분(?:\s*\d+\s*초)?|\d+\s*초|\d+:\d+)?\s*$/i, '').trim();
+    let m = title.match(new RegExp(`\\s*[\\(\\[]\\s*(${KEY})\\s*(?:key)?\\s*[\\)\\]]\\s*$`, 'i')) || title.match(new RegExp(`\\s*(?<=[\\s\\]])(${KEY})\\s*(?:key)?\\s*$`, 'i'));
+    if (m) { key = m[1].replace(/\s*(->|→)\s*/g, '-').replace(/\s/g, ''); title = title.slice(0, m.index).trim(); }
+    // medley marks: "→" anywhere, "->" or "+" only with spaces around (so "G->A" is never split)
+    const parts = title.split(/\s*→\s*|\s+->\s+|\s\+\s/).map(p => p.replace(/^\[\s*|\s*\]$/g, '').trim()).filter(Boolean);
+    const prog = r.prog.join(' ');
+    const segs = prog.split(/\s*(?:→|->)\s*/);
+    const keys = key.split(' / ')[0].split('-');
+    parts.forEach((p, k) => {
+      // key: first part starts in the first key, later parts carry the rest (e.g. D-E: 예수 안에 우리 D → 주의 자녀로 D-E)
+      const kk = !key ? '' : parts.length > 1 && keys.length > 1 && k < parts.length - 1 ? keys[0] : key;
+      const lead = k === 0 && leaders.length > 1 && r.who ? `[${r.who}]\n` : '';
+      const head = `${lead}${k === 0 ? r.no + '. ' : '→ '}${p}${kk ? ' ' + kk : ''}`;
+      let pg = segs.length === parts.length ? segs[k] : (k === 0 ? prog : '');
+      if (k > 0 && pg) pg = '→ ' + pg;
+      if (k === parts.length - 1 && r.notes.length) pg = [pg, ...r.notes].filter(Boolean).join('\n');
+      out.songs.push({ head, prog: pg });
+    });
+  }
+  return out;
+}
+function applyParsed(p) {
+  if (!p.songs.length) { $('status').textContent = '곡을 찾지 못했어요. "1. 곡 제목 (키)" 형식인지 확인해 주세요.'; return; }
+  if (p.date) $('date').value = p.date;
+  if (p.leader) $('leader').value = p.leader;
+  if (p.service) { if (['Newsong J', '주일 5부'].includes(p.service)) $('service').value = p.service; else { $('service').value = 'custom'; $('serviceCustom').value = p.service; } }
+  $('customWrap').hidden = $('service').value !== 'custom';
+  const old = songs; songs = p.songs.map(newSong);
+  songs.forEach(s => { const o = old.find(x => x.pages.length && norm(x.head) === norm(s.head)); if (o) { s.pages = o.pages; s.split = o.split; } });
+  saveText(); renderEditor(); scheduleRender();
+  $('status').textContent = `곡 ${songs.length}개를 채웠어요. 키·진행을 확인하고 악보 사진을 올려 주세요.`;
+}
+const norm = s => (s || '').replace(/^\[.*?\]\s*/s, '').replace(/^[\d.→+\s]+/, '').replace(/\(.*?\)/g, '')
+  .replace(new RegExp(`\\s+${KEY}(\\s*/\\s*\\d+)?\\s*$`), '').replace(/[\s_\-()]/g, '').toLowerCase();
+
+/* greeting for the pastor (KakaoTalk) */
+let greetEdited = false;
+function greeting() {
+  const d = $('date').value ? $('date').value.split('-') : null;
+  const when = d ? `${+d[1]}월 ${+d[2]}일 ` : '';
+  const who = $('sender').value.trim() || '섬김팀 OOO';
+  return `안녕하세요 목사님! ${who}입니다. 이번 주 ${when}${serviceName()} 경배와 찬양 콘티 이미지와 pdf 파일 보내드립니다.\n\n컨펌 부탁드립니다! 감사합니다`;
+}
+function refreshGreeting() { if (!greetEdited) $('greet').value = greeting(); }
+function bulkImages(files) {
+  const list = [...files]; if (!list.length) return;
+  const free = new Set(songs.filter(s => !s.pages.length));
+  const assign = (s, f) => { free.delete(s); loadImage(s, f); };
+  const all = [...songs];
+  const rest = [];
+  for (const f of list) {
+    const fn = norm(f.name.replace(/\.[^.]+$/, '').replace(/[A-G][#b]?(키|key|코드)?$/i, ''));
+    const fnBase = fn.replace(/\d+$/, '');
+    const hit = all.find(s => { const t = norm(s.head); return t && fnBase && (fnBase.includes(t) || t.includes(fnBase)); });
+    if (hit) assign(hit, f); else rest.push(f);
+  }
+  for (const f of rest) { const s = [...free][0]; if (!s) break; assign(s, f); }
+}
+
+/* ---------- boot ---------- */
+$('parseBtn').onclick = () => applyParsed(parseConti($('paste').value));
+$('perPage').addEventListener('change', () => { saveText(); scheduleRender(); });
+$('bulk').addEventListener('change', e => { bulkImages(e.target.files); e.target.value = ''; });
+['date', 'leader', 'serviceCustom', 'sender', 'paste'].forEach(id => $(id).addEventListener('input', () => { saveText(); scheduleRender(); refreshGreeting(); }));
+$('sender').addEventListener('change', () => { try { localStorage.setItem('conti-tool-sender', $('sender').value); } catch (e) {} });
+$('service').addEventListener('change', () => { $('customWrap').hidden = $('service').value !== 'custom'; saveText(); scheduleRender(); refreshGreeting(); });
+$('greet').addEventListener('input', () => { greetEdited = true; saveText(); });
+$('copyGreet').onclick = async () => {
+  try { await navigator.clipboard.writeText($('greet').value); $('status').textContent = '인사말을 복사했어요. 카톡 대화방에 붙여넣으세요.'; }
+  catch (e) { $('greet').focus(); $('greet').select(); $('status').textContent = '인사말이 선택됐어요. Ctrl+C로 복사해 주세요.'; }
+};
+$('addSong').onclick = () => { songs.push(newSong({ head: `${songs.filter(s => !s.join).length + 1}. ` })); saveText(); renderEditor(); scheduleRender(); };
+$('clearAll').onclick = () => { songs = [newSong({ head: '1. ' })]; saveText(); renderEditor(); scheduleRender(); };
+$('newBtn').onclick = () => { $('newRow').hidden = false; $('newDate').focus(); try { $('newDate').showPicker(); } catch (e) {} };
+$('createBtn').onclick = () => { if (!$('newDate').value) { $('status').textContent = '예배 날짜를 골라 주세요.'; return; } createWs($('newDate').value); };
+$('newDate').addEventListener('change', () => { if ($('newDate').value) createWs($('newDate').value); });
+$('closeWs').onclick = async () => { clearTimeout(wsTimer); await saveWsNow(); closeWs(); };
+$('doneBtn').onclick = async () => {
+  clearTimeout(timer); render();
+  let thumb = null;
+  if (canvases[0]) { const c = document.createElement('canvas'); c.width = 480; c.height = Math.round(480 * PH / PW); c.getContext('2d').drawImage(canvases[0], 0, 0, c.width, c.height); thumb = c.toDataURL('image/jpeg', 0.8); }
+  curDone = true; clearTimeout(wsTimer); await saveWsNow({ done: true, thumb });
+  $('status').textContent = `${wsTitle({ date: $('date').value, leader: $('leader').value })} 콘티를 보관함에 넣었어요. 계속 고치면 자동으로 저장돼요.`;
+};
+
+showWs(false); renderArchive();
+document.fonts && document.fonts.load(`700 16px "Noto Sans KR"`).then(() => { if (curId) render(); }).catch(() => {});
+</script>
